@@ -4,8 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#e4572e">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>반응속도 · 스톱워치 게임</title>
 <style>
 :root{
@@ -132,48 +130,22 @@ h2{font-size:17px;margin:0 0 12px}
 
   <header>
     <h1>반응속도 · 스톱워치 게임</h1>
-    <p class="sub">아이디로 가입하거나 로그인해서 우리 반 최고 기록에 도전해 보세요.</p>
+    <p class="sub">내 번호를 입력하고 들어가서 우리 반 최고 기록에 도전해 보세요.</p>
   </header>
 
-  <!-- auth -->
-  <section class="card" id="auth" hidden aria-label="로그인과 가입">
-    <div class="tabs" role="tablist">
-      <button class="tab" role="tab" id="tab-login" aria-selected="true">로그인</button>
-      <button class="tab" role="tab" id="tab-signup" aria-selected="false">가입</button>
-    </div>
-
-    <form id="form-login" style="margin-top:4px">
+  <!-- 번호 입력 -->
+  <section class="card" id="entry" hidden aria-label="번호 입력">
+    <form id="form-entry">
       <div class="field">
-        <label for="l-user">아이디</label>
-        <input id="l-user" autocomplete="username" placeholder="영문 소문자, 숫자, _ (4~20자)">
-      </div>
-      <div class="field">
-        <label for="l-pass">비밀번호</label>
-        <input id="l-pass" type="password" autocomplete="current-password">
-      </div>
-      <p class="err" id="l-err"></p>
-      <div class="row"><button class="btn primary" id="l-go" type="submit">로그인</button></div>
-    </form>
-
-    <form id="form-signup" hidden style="margin-top:4px">
-      <div class="field">
-        <label for="s-no">번호</label>
-        <input id="s-no" type="number" inputmode="numeric" min="0" max="27" placeholder="번호 입력 (0~27)">
+        <label for="n-no">번호</label>
+        <input id="n-no" type="number" inputmode="numeric" min="0" max="27" placeholder="번호 입력 (0~27)">
       </div>
       <div class="field">
         <label>이름</label>
-        <div id="s-name" class="name-show">번호를 입력하면 이름이 나와요</div>
+        <div id="n-name" class="name-show">번호를 입력하면 이름이 나와요</div>
       </div>
-      <div class="field">
-        <label for="s-user">아이디</label>
-        <input id="s-user" autocomplete="username" placeholder="영문 소문자, 숫자, _ (4~20자)">
-      </div>
-      <div class="field">
-        <label for="s-pass">비밀번호</label>
-        <input id="s-pass" type="password" autocomplete="new-password" placeholder="6자 이상">
-      </div>
-      <p class="err" id="s-err"></p>
-      <div class="row"><button class="btn primary" id="s-go" type="submit">가입하기</button></div>
+      <p class="err" id="n-err"></p>
+      <div class="row"><button class="btn primary" id="n-go" type="submit">들어가기</button></div>
     </form>
   </section>
 
@@ -183,7 +155,7 @@ h2{font-size:17px;margin:0 0 12px}
     <section class="card" aria-label="내 정보">
       <div class="who-bar">
         <span class="me" id="me"></span>
-        <button class="btn" id="logout">로그아웃</button>
+        <button class="btn" id="change-no">번호 바꾸기</button>
       </div>
     </section>
 
@@ -289,7 +261,6 @@ h2{font-size:17px;margin:0 0 12px}
   };
   var NONE = 999999, DAY = 86400000;
 
-  // 칭호 목록 (기존 사이트와 같은 기준)
   var TITLES = [
     { id:'solo', kind:'stop', at:[1111, 11111], label:'👤솔로👤', cond:'시간 맞추기에서 1.111초 또는 11.111초에 멈춤' },
     { id:'couple', kind:'stop', at:[2222, 12222], label:'👥짝이 생긴👥', cond:'시간 맞추기에서 2.222초 또는 12.222초에 멈춤' },
@@ -341,11 +312,10 @@ h2{font-size:17px;margin:0 0 12px}
   function coded(code){ var e = new Error(code); e.code = code; return e; }
   function codeOf(e){
     var m = String((e && (e.message || e.code)) || '');
-    var keys = ['login_required','not_signed','bad_score','bad_mode','not_earned','number_taken','username_taken','wrong_login','confirm_on'];
+    var keys = ['login_required','not_signed','bad_score','bad_mode','bad_no','not_earned'];
     for (var i = 0; i < keys.length; i++){ if (m.indexOf(keys[i]) >= 0) return keys[i]; }
     return 'error';
   }
-  function emailOf(u){ return u + '@class-games.app'; }
   function honor(p){ return p.no === 0 ? p.name : p.name + ' 님'; }
   function honorRow(r){ return (r.title ? r.title + ' ' : '') + (r.no === 0 ? r.name : r.name + ' 님'); }
   function dispName(r){ return (r.title ? r.title + ' ' : '') + r.name; }
@@ -360,7 +330,14 @@ h2{font-size:17px;margin:0 0 12px}
   function fmtDay(ts){ var d = new Date(ts); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
   function weekRange(mon){ return fmtDay(mon) + ' ~ ' + fmtDay(mon + 6 * DAY); }
 
-  // 칭호 계산 (기록 한 번에 받는 칭호)
+  // 번호를 이 기기에 기억 (실패해도 괜찮음)
+  function getSavedNo(){
+    try { var v = localStorage.getItem('myNo'); return v === null ? null : parseInt(v, 10); } catch(e){ return null; }
+  }
+  function setSavedNo(n){
+    try { if (n === null) localStorage.removeItem('myNo'); else localStorage.setItem('myNo', String(n)); } catch(e){}
+  }
+
   function recordTitles(m, score, elapsed){
     var ids = [];
     TITLES.forEach(function(t){
@@ -371,38 +348,28 @@ h2{font-size:17px;margin:0 0 12px}
   }
   function grantIds(ids){
     if (!ids.length) return Promise.resolve();
-    return db.rpc('grant_titles', { p_ids: ids }).then(function(r){ if (r.error) throw r.error; });
+    return db.rpc('grant_titles', { p_no: me.no, p_ids: ids }).then(function(r){ if (r.error) throw r.error; });
   }
 
-  // 이름 옆에 붙일 칭호를 채워 넣기 (공개 정보만 읽음)
+  // 목록의 각 사람에게 장착 칭호를 붙이기
   function attachTitles(rows){
-    var ids = [];
-    rows.forEach(function(r){ if (ids.indexOf(r.user_id) < 0) ids.push(r.user_id); });
-    if (!ids.length) return Promise.resolve(rows);
-    return db.from('public_profiles').select('id,equipped').in('id', ids).then(function(r){
+    var nos = [];
+    rows.forEach(function(r){ if (nos.indexOf(r.no) < 0) nos.push(r.no); });
+    if (!nos.length) return Promise.resolve(rows);
+    return db.from('players').select('no,equipped').in('no', nos).then(function(r){
       if (r.error) throw r.error;
       var map = {};
-      (r.data || []).forEach(function(p){ map[p.id] = p.equipped; });
-      rows.forEach(function(x){ x.title = labelOf(map[x.user_id]); });
+      (r.data || []).forEach(function(p){ map[p.no] = p.equipped; });
+      rows.forEach(function(x){ x.title = labelOf(map[x.no]); });
       return rows;
     });
   }
 
-  /* ---------- auth screens ---------- */
-  function setAuthTab(which){
-    var login = which === 'login';
-    $('#tab-login').setAttribute('aria-selected', String(login));
-    $('#tab-signup').setAttribute('aria-selected', String(!login));
-    $('#form-login').hidden = !login;
-    $('#form-signup').hidden = login;
-  }
-  $('#tab-login').addEventListener('click', function(){ setAuthTab('login'); });
-  $('#tab-signup').addEventListener('click', function(){ setAuthTab('signup'); });
-
+  /* ---------- 번호 입력 화면 ---------- */
   function lookupNo(){
-    var v = $('#s-no').value.trim();
+    var v = $('#n-no').value.trim();
     var n = parseInt(v, 10);
-    var out = $('#s-name');
+    var out = $('#n-name');
     if (v !== '' && Object.prototype.hasOwnProperty.call(ROSTER, n)){
       out.textContent = ROSTER[n]; out.classList.add('on'); return true;
     }
@@ -410,96 +377,52 @@ h2{font-size:17px;margin:0 0 12px}
     out.classList.remove('on');
     return false;
   }
-  $('#s-no').addEventListener('input', lookupNo);
+  $('#n-no').addEventListener('input', lookupNo);
 
-  var AUTH_MSG = {
-    wrong_login: '아이디 또는 비밀번호가 맞지 않아요.',
-    username: '아이디는 영문 소문자, 숫자, _ 로 4~20자여야 해요.',
-    password: '비밀번호는 6자 이상이어야 해요.',
-    no_number: '0~27 사이의 번호를 입력해 주세요.',
-    number_taken: '이 번호는 이미 가입되어 있어요. 로그인해 주세요.',
-    username_taken: '이미 사용 중인 아이디예요.',
-    confirm_on: 'Supabase에서 이메일 확인을 꺼 주세요. (선생님께 말씀드리세요)',
-    bad_request: '입력을 다시 확인해 주세요.'
-  };
-  var USER_RE = /^[a-z0-9_]{4,20}$/;
-
-  $('#form-login').addEventListener('submit', function(e){
+  $('#form-entry').addEventListener('submit', function(e){
     e.preventDefault();
-    var btn = $('#l-go'), err = $('#l-err');
+    var err = $('#n-err');
     err.textContent = '';
-    var u = $('#l-user').value.trim().toLowerCase();
-    var p = $('#l-pass').value;
-    if (!USER_RE.test(u)){ err.textContent = AUTH_MSG.username; return; }
-    btn.disabled = true;
-    db.auth.signInWithPassword({ email: emailOf(u), password: p }).then(function(r){
-      if (r.error) throw coded('wrong_login');
-      return loadMe();
-    }).then(function(m){
-      me = m; showMain();
+    if (!lookupNo()){ err.textContent = '0~27 사이의 번호를 입력해 주세요.'; return; }
+    var n = parseInt($('#n-no').value, 10);
+    var btn = $('#n-go'); btn.disabled = true;
+    me = { no: n, name: ROSTER[n] };
+    loadEquipped().then(function(){
+      setSavedNo(n);
+      showMain();
     }).catch(function(er){
-      err.textContent = AUTH_MSG[codeOf(er)] || '로그인하지 못했어요.';
+      me = null;
+      err.textContent = '들어가지 못했어요: ' + (er && (er.message || er.code) || '알 수 없는 오류');
     }).then(function(){ btn.disabled = false; });
   });
 
-  $('#form-signup').addEventListener('submit', function(e){
-    e.preventDefault();
-    var err = $('#s-err');
-    err.textContent = '';
-    if (!lookupNo()){ err.textContent = AUTH_MSG.no_number; return; }
-    var no = parseInt($('#s-no').value, 10);
-    var u = $('#s-user').value.trim().toLowerCase();
-    var p = $('#s-pass').value;
-    if (!USER_RE.test(u)){ err.textContent = AUTH_MSG.username; return; }
-    if (p.length < 6){ err.textContent = AUTH_MSG.password; return; }
-    var btn = $('#s-go'); btn.disabled = true;
+  $('#change-no').addEventListener('click', function(){
+    setSavedNo(null);
+    me = null;
+    resetGame();
+    showEntry();
+  });
 
-    db.rpc('is_available', { p_no: no, p_username: u }).then(function(r){
+  // 내 장착 칭호 가져오기
+  function loadEquipped(){
+    return db.from('players').select('no,equipped').eq('no', me.no).single().then(function(r){
       if (r.error) throw r.error;
-      if (r.data === 'number_taken') throw coded('number_taken');
-      if (r.data === 'username_taken') throw coded('username_taken');
-      return db.auth.signUp({ email: emailOf(u), password: p, options: { data: { no: no, username: u } } });
-    }).then(function(r){
-      if (r.error){
-        if (/already/i.test(r.error.message)) throw coded('username_taken');
-        throw r.error;
-      }
-      if (!r.data.session) throw coded('confirm_on');
-      return loadMe();
-    }).then(function(m){
-      me = m; showMain();
-    }).catch(function(er){
-      err.textContent = AUTH_MSG[codeOf(er)] || ('가입하지 못했어요: ' + (er && (er.message || er.code) || '알 수 없는 오류'));
-    }).then(function(){ btn.disabled = false; });
-  });
-
-  $('#logout').addEventListener('click', function(){
-    db.auth.signOut().catch(function(){}).then(function(){
-      me = null; resetGame(); showAuth();
-    });
-  });
-
-  // 로그인한 사람의 회원 정보
-  function loadMe(){
-    return db.auth.getSession().then(function(r){
-      var s = r.data && r.data.session;
-      if (!s) return null;
-      return db.from('profiles').select('id,username,no,name,equipped').eq('id', s.user.id).single().then(function(p){
-        if (p.error) throw p.error;
-        return { id: p.data.id, username: p.data.username, no: p.data.no, name: p.data.name,
-                 equipped: p.data.equipped, title: labelOf(p.data.equipped) };
-      });
+      me.equipped = r.data.equipped;
+      me.title = labelOf(r.data.equipped);
     });
   }
 
-  function showAuth(){
+  function showEntry(){
     $('#main').hidden = true;
     $('#bottom-nav').hidden = true;
-    $('#auth').hidden = false;
-    setAuthTab('login');
+    $('#entry').hidden = false;
+    $('#n-no').value = '';
+    $('#n-name').textContent = '번호를 입력하면 이름이 나와요';
+    $('#n-name').classList.remove('on');
+    $('#n-err').textContent = '';
   }
   function showMain(){
-    $('#auth').hidden = true;
+    $('#entry').hidden = true;
     $('#main').hidden = false;
     $('#bottom-nav').hidden = false;
     $('#me').textContent = (me.title ? me.title + ' ' : '') + me.no + '번 ' + honor(me);
@@ -629,7 +552,7 @@ h2{font-size:17px;margin:0 0 12px}
     var score = pending.score, m = mode, el = pending.elapsed == null ? null : pending.elapsed;
     saveBtn.disabled = true;
     savedMsg.className = 'saved'; savedMsg.textContent = '저장하는 중...';
-    db.rpc('submit_score', { p_mode: m, p_score: score, p_elapsed: el }).then(function(r){
+    db.rpc('submit_score', { p_no: me.no, p_mode: m, p_score: score, p_elapsed: el }).then(function(r){
       if (r.error) throw r.error;
       return grantIds(recordTitles(m, score, el));
     }).then(function(){
@@ -644,9 +567,7 @@ h2{font-size:17px;margin:0 0 12px}
     }).catch(function(e){
       saveBtn.disabled = false;
       savedMsg.className = 'saved bad';
-      savedMsg.textContent = codeOf(e) === 'login_required'
-        ? '로그인이 끝났어요. 다시 로그인해 주세요.'
-        : '저장하지 못했어요. 잠시 후 다시 해 주세요.';
+      savedMsg.textContent = '저장하지 못했어요: ' + (e && (e.message || e.code) || '');
     });
   }
 
@@ -654,7 +575,7 @@ h2{font-size:17px;margin:0 0 12px}
     var score = pending.score, m = mode, el = pending.elapsed == null ? null : pending.elapsed;
     saveBtn.disabled = true;
     savedMsg.className = 'saved'; savedMsg.textContent = '리그에 반영하는 중...';
-    db.rpc('league_record', { p_mode: m, p_score: score, p_elapsed: el }).then(function(r){
+    db.rpc('league_record', { p_no: me.no, p_mode: m, p_score: score, p_elapsed: el }).then(function(r){
       if (r.error) throw r.error;
       var best = r.data;
       return grantIds(recordTitles(m, score, el)).then(function(){
@@ -668,14 +589,14 @@ h2{font-size:17px;margin:0 0 12px}
       savedMsg.className = 'saved bad';
       savedMsg.textContent = codeOf(e) === 'not_signed'
         ? '이번 주 리그에 신청하지 않았어요. 신청은 지난주에 할 수 있었어요.'
-        : '저장하지 못했어요. 잠시 후 다시 해 주세요.';
+        : '저장하지 못했어요: ' + (e && (e.message || e.code) || '');
     });
   }
 
   /* ---------- all-time board ---------- */
   function loadBoard(){
     var m = lbMode;
-    db.from('scores').select('user_id,no,name,score,created_at')
+    db.from('scores').select('no,name,score,created_at')
       .eq('mode', m).order('score', { ascending: true }).order('created_at', { ascending: true }).limit(10)
       .then(function(r){
         if (r.error) throw r.error;
@@ -734,7 +655,7 @@ h2{font-size:17px;margin:0 0 12px}
   function loadLeague(){
     var weeks = [];
     for (var k = -4; k <= 1; k++) weeks.push(weekKey(weekMonday(k)));
-    return db.from('league_entries').select('week,mode,user_id,no,name,best,tries,at').in('week', weeks)
+    return db.from('league_entries').select('week,mode,no,name,best,tries,at').in('week', weeks)
       .then(function(r){
         if (r.error) throw r.error;
         return attachTitles(r.data || []);
@@ -766,8 +687,8 @@ h2{font-size:17px;margin:0 0 12px}
 
     var curRank = rankedOf(cur, m);
     var nextRank = rankedOf(next, m);
-    var mineCur = curRank.played.concat(curRank.rest).filter(function(r){ return me && r.user_id === me.id; })[0];
-    var mineNext = nextRank.played.concat(nextRank.rest).filter(function(r){ return me && r.user_id === me.id; })[0];
+    var mineCur = curRank.played.concat(curRank.rest).filter(function(r){ return r.no === me.no; })[0];
+    var mineNext = nextRank.played.concat(nextRank.rest).filter(function(r){ return r.no === me.no; })[0];
 
     var text;
     if (!mineCur) text = '이번 주 리그에는 신청하지 않았어요.';
@@ -829,20 +750,20 @@ h2{font-size:17px;margin:0 0 12px}
 
   $('#lg-signup').addEventListener('click', function(){
     var btn = this; btn.disabled = true;
-    db.rpc('league_signup', { p_mode: mode }).then(function(r){
+    db.rpc('league_signup', { p_no: me.no, p_mode: mode }).then(function(r){
       if (r.error) throw r.error;
       $('#lg-msg').className = 'saved ok'; $('#lg-msg').textContent = '다음 주 리그 신청 완료!';
       return loadLeague();
     }).catch(function(e){
       btn.disabled = false;
       $('#lg-msg').className = 'saved bad';
-      $('#lg-msg').textContent = codeOf(e) === 'login_required' ? '로그인이 끝났어요. 다시 로그인해 주세요.' : '신청하지 못했어요. 잠시 후 다시 해 주세요.';
+      $('#lg-msg').textContent = '신청하지 못했어요: ' + (e && (e.message || e.code) || '');
     });
   });
 
   $('#lg-cancel').addEventListener('click', function(){
     var btn = this; btn.disabled = true;
-    db.rpc('league_cancel', { p_mode: mode }).then(function(r){
+    db.rpc('league_cancel', { p_no: me.no, p_mode: mode }).then(function(r){
       if (r.error) throw r.error;
       $('#lg-msg').className = 'saved ok'; $('#lg-msg').textContent = '신청을 취소했어요.';
       return loadLeague();
@@ -852,7 +773,7 @@ h2{font-size:17px;margin:0 0 12px}
     });
   });
 
-  /* ---------- league titles (끝난 주 기록으로 계산) ---------- */
+  /* ---------- league titles ---------- */
   function longestRun(weeks){
     var best = 0, run = 0, prev = null;
     weeks.forEach(function(w){
@@ -865,7 +786,7 @@ h2{font-size:17px;margin:0 0 12px}
   }
   function evaluateLeagueTitles(){
     var cur = weekKey(weekMonday(0));
-    return db.from('league_entries').select('week,mode,user_id,best,at')
+    return db.from('league_entries').select('week,mode,no,best,at')
       .lt('week', cur).lt('best', NONE)
       .then(function(r){
         if (r.error) throw r.error;
@@ -880,7 +801,7 @@ h2{font-size:17px;margin:0 0 12px}
             return (Number(a.best) - Number(b.best)) || (Number(a.at) - Number(b.at));
           });
           g.forEach(function(x, i){
-            if (x.user_id === me.id) mine.push({ week: x.week, mode: x.mode, rank: i + 1 });
+            if (x.no === me.no) mine.push({ week: x.week, mode: x.mode, rank: i + 1 });
           });
         });
         var ids = [];
@@ -911,7 +832,7 @@ h2{font-size:17px;margin:0 0 12px}
 
   /* ---------- titles ---------- */
   function loadTitles(){
-    return db.from('user_titles').select('title').eq('user_id', me.id).then(function(r){
+    return db.from('user_titles').select('title').eq('no', me.no).then(function(r){
       if (r.error) throw r.error;
       renderTitles((r.data || []).map(function(x){ return x.title; }));
     }).catch(function(){});
@@ -956,7 +877,7 @@ h2{font-size:17px;margin:0 0 12px}
   });
   $('#title-off').addEventListener('click', function(){ equipTitle(null); });
   function equipTitle(id){
-    db.rpc('set_title', { p_id: id }).then(function(r){
+    db.rpc('set_title', { p_no: me.no, p_id: id }).then(function(r){
       if (r.error) throw r.error;
       $('#title-msg').className = 'saved ok';
       $('#title-msg').textContent = id ? '칭호를 장착했어요.' : '칭호를 해제했어요.';
@@ -968,23 +889,24 @@ h2{font-size:17px;margin:0 0 12px}
   }
 
   function refreshAll(){
-    return loadMe().then(function(m){
-      if (!m) return;
-      me = m;
+    if (!me) return Promise.resolve();
+    return loadEquipped().then(function(){
       $('#me').textContent = (me.title ? me.title + ' ' : '') + me.no + '번 ' + honor(me);
-      return evaluateLeagueTitles().catch(function(){})
-        .then(loadTitles)
-        .then(loadBoard);
-    }).catch(function(){});
+      return evaluateLeagueTitles().catch(function(){});
+    }).then(loadTitles)
+      .then(loadBoard)
+      .catch(function(){});
   }
 
   /* ---------- init ---------- */
   setMode('react');
-  loadMe().then(function(m){
-    if (m){ me = m; showMain(); } else { showAuth(); }
-  }).catch(function(){
-    showAuth();
-  });
+  var saved = getSavedNo();
+  if (saved !== null && !isNaN(saved) && Object.prototype.hasOwnProperty.call(ROSTER, saved)){
+    me = { no: saved, name: ROSTER[saved] };
+    loadEquipped().then(showMain).catch(function(){ showEntry(); });
+  } else {
+    showEntry();
+  }
 })();
 </script>
 <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){});}</script>
