@@ -469,7 +469,7 @@ h2{font-size:17px;margin:0 0 12px}
     }).then(function(m){
       me = m; showMain();
     }).catch(function(er){
-      err.textContent = AUTH_MSG[codeOf(er)] || '가입하지 못했어요. 잠시 후 다시 해 주세요.';
+      err.textContent = AUTH_MSG[codeOf(er)] || ('가입하지 못했어요: ' + (er && (er.message || er.code) || '알 수 없는 오류'));
     }).then(function(){ btn.disabled = false; });
   });
 
