@@ -211,12 +211,13 @@ h2{font-size:17px;margin:0 0 12px}
 
       <section class="card" aria-label="게임">
         <div class="tabs" role="tablist" style="margin-top:0">
-          <button class="tab" role="tab" aria-selected="true" data-mode="react">반응속도</button>
-          <button class="tab" role="tab" aria-selected="false" data-mode="stop">스톱워치</button>
-          <button class="tab" role="tab" aria-selected="false" data-mode="sort">분류게임</button>
-          <button class="tab" role="tab" aria-selected="false" data-mode="mole">두더지</button>
-          <button class="tab" role="tab" aria-selected="false" data-mode="dino">공룡 달리기</button>
-          <button class="tab" role="tab" aria-selected="false" data-mode="typo">숨은 오타</button>
+          <button class="tab" role="tab" aria-selected="true" data-mode="react">번개 터치</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="stop">10초 딱</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="sort">색깔 팡</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="mole">두더지 팡</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="dino">공룡 런</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="typo">오타 헌터</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="shoot">불꽃 슈팅</button>
         </div>
         <p class="rule" id="rule"></p>
 
@@ -268,12 +269,11 @@ h2{font-size:17px;margin:0 0 12px}
         <div id="dino-area" hidden>
           <div class="g-status">
             <span>거리 <b id="d-score">0 m</b></span>
-            <span>🌵 점프 · 🐦 숙이기</span>
+            <span>🌵 점프로 넘으세요</span>
           </div>
           <canvas id="d-canvas" width="360" height="160"></canvas>
-          <div class="s-btns">
+          <div class="s-btns" style="grid-template-columns:1fr">
             <button class="sbtn" id="d-jump">⬆ 점프</button>
-            <button class="sbtn" id="d-duck">⬇ 숙이기</button>
           </div>
           <div class="row"><button class="btn primary" id="d-start">시작</button></div>
           <p class="saved" id="d-msg"></p>
@@ -290,6 +290,19 @@ h2{font-size:17px;margin:0 0 12px}
           <div class="row"><button class="btn primary" id="t-start">시작</button></div>
           <p class="saved" id="t-msg"></p>
         </div>
+
+        <!-- 불꽃 슈팅 (농구 자유투) -->
+        <div id="shoot-area" hidden>
+          <div class="g-status">
+            <span>점수 <b id="b-score">0</b></span>
+            <span>연속 <b id="b-streak">0</b>개</span>
+            <span id="b-time">60.0초</span>
+          </div>
+          <canvas id="b-canvas" width="360" height="320" style="display:block;width:100%;max-width:360px;margin:12px auto 0;background:var(--bg);border-radius:12px;border:1px solid var(--line);touch-action:none"></canvas>
+          <p class="s-hint">공을 골대 쪽으로 위로 밀어 올리듯 스와이프하세요. 🔥 3연속 +1 · 5연속 +2 · 7연속 +3 · 10연속 +10 보너스</p>
+          <div class="row"><button class="btn primary" id="b-start">시작</button></div>
+          <p class="saved" id="b-msg"></p>
+        </div>
       </section>
 
       <section class="card" aria-label="전체 순위">
@@ -305,12 +318,13 @@ h2{font-size:17px;margin:0 0 12px}
           </select>
         </div>
         <div class="tabs" role="tablist" style="margin-top:12px">
-          <button class="tab" role="tab" aria-selected="true" data-lb="react">반응속도</button>
-          <button class="tab" role="tab" aria-selected="false" data-lb="stop">스톱워치</button>
-          <button class="tab" role="tab" aria-selected="false" data-lb="sort">분류게임</button>
-          <button class="tab" role="tab" aria-selected="false" data-lb="mole">두더지</button>
-          <button class="tab" role="tab" aria-selected="false" data-lb="dino">공룡 달리기</button>
-          <button class="tab" role="tab" aria-selected="false" data-lb="typo">숨은 오타</button>
+          <button class="tab" role="tab" aria-selected="true" data-lb="react">번개 터치</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="stop">10초 딱</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="sort">색깔 팡</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="mole">두더지 팡</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="dino">공룡 런</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="typo">오타 헌터</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="shoot">불꽃 슈팅</button>
         </div>
         <div class="podium" id="podium"></div>
         <p class="empty" id="empty" hidden></p>
@@ -322,12 +336,13 @@ h2{font-size:17px;margin:0 0 12px}
     <div id="panel-league" hidden style="display:flex;flex-direction:column;gap:20px">
       <section class="card" aria-label="리그">
         <div class="tabs" role="tablist" style="margin-top:0">
-          <button class="tab" role="tab" aria-selected="true" data-lgm="react">반응속도</button>
-          <button class="tab" role="tab" aria-selected="false" data-lgm="stop">스톱워치</button>
-          <button class="tab" role="tab" aria-selected="false" data-lgm="sort">분류게임</button>
-          <button class="tab" role="tab" aria-selected="false" data-lgm="mole">두더지</button>
-          <button class="tab" role="tab" aria-selected="false" data-lgm="dino">공룡 달리기</button>
-          <button class="tab" role="tab" aria-selected="false" data-lgm="typo">숨은 오타</button>
+          <button class="tab" role="tab" aria-selected="true" data-lgm="react">번개 터치</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="stop">10초 딱</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="sort">색깔 팡</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="mole">두더지 팡</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="dino">공룡 런</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="typo">오타 헌터</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="shoot">불꽃 슈팅</button>
         </div>
         <div class="head-row" style="margin-top:14px">
           <h2 id="lg-sport" style="margin:0">리그</h2>
@@ -377,42 +392,43 @@ h2{font-size:17px;margin:0 0 12px}
 
   // 게임 목록: high = 점수가 높을수록 좋은 게임
   var GAMES = {
-    react:{ label:'반응속도', high:false, unit:function(v){ return v + ' ms'; } },
-    stop:{ label:'스톱워치', high:false, unit:function(v){ return '차이 ' + v + ' ms'; } },
-    sort:{ label:'분류게임', high:true, unit:function(v){ return v + ' 개'; } },
-    mole:{ label:'두더지', high:true, unit:function(v){ return v + ' 점'; } },
-    dino:{ label:'공룡 달리기', high:true, unit:function(v){ return v + ' m'; } },
-    typo:{ label:'숨은 오타', high:true, unit:function(v){ return v + ' 점'; } }
+    react:{ label:'번개 터치', high:false, unit:function(v){ return v + ' ms'; } },
+    stop:{ label:'10초 딱', high:false, unit:function(v){ return '차이 ' + v + ' ms'; } },
+    sort:{ label:'색깔 팡', high:true, unit:function(v){ return v + ' 개'; } },
+    mole:{ label:'두더지 팡', high:true, unit:function(v){ return v + ' 점'; } },
+    dino:{ label:'공룡 런', high:true, unit:function(v){ return v + ' m'; } },
+    typo:{ label:'오타 헌터', high:true, unit:function(v){ return v + ' 점'; } },
+    shoot:{ label:'불꽃 슈팅', high:true, unit:function(v){ return v + ' 점'; } }
   };
-  var MODES = ['react','stop','sort','mole','dino','typo'];
+  var MODES = ['react','stop','sort','mole','dino','typo','shoot'];
   function isHigh(m){ return GAMES[m].high; }
   function fmt(m, v){ return GAMES[m].unit(v); }
 
   var TITLES = [
-    { id:'solo', kind:'stop', at:[1111, 11111], label:'👤솔로👤', cond:'시간 맞추기에서 1.111초 또는 11.111초에 멈춤' },
-    { id:'couple', kind:'stop', at:[2222, 12222], label:'👥짝이 생긴👥', cond:'시간 맞추기에서 2.222초 또는 12.222초에 멈춤' },
-    { id:'group3', kind:'stop', at:[3333, 13333], label:'3️⃣3인분3️⃣', cond:'시간 맞추기에서 3.333초 또는 13.333초에 멈춤' },
-    { id:'escape', kind:'stop', at:[4444, 14444], label:'⚰️구사일생⚰️', cond:'시간 맞추기에서 4.444초 또는 14.444초에 멈춤' },
-    { id:'half', kind:'stop', at:[5555, 15555], label:'🌓반달🌗', cond:'시간 맞추기에서 5.555초 또는 15.555초에 멈춤' },
-    { id:'meat', kind:'stop', at:[6666, 16666], label:'🍖육식🍖', cond:'시간 맞추기에서 6.666초 또는 16.666초에 멈춤' },
-    { id:'lucky', kind:'stop', at:[7777], label:'🍀행운🍀', cond:'시간 맞추기에서 7.777초에 멈춤' },
-    { id:'lucky_happy', kind:'stop', at:[17777], label:'☘️행운대신 행복☘️', cond:'시간 맞추기에서 17.777초에 멈춤' },
-    { id:'snowman', kind:'stop', at:[8888, 18888], label:'⛄️눈사람⛄️', cond:'시간 맞추기에서 8.888초 또는 18.888초에 멈춤' },
-    { id:'pigeon', kind:'stop', at:[9999], label:'🕊비둘기 울음소리🕊', cond:'시간 맞추기에서 9.999초에 멈춤' },
-    { id:'times', kind:'stop', at:[19999], label:'✖️곱하기 1.9999✖️', cond:'시간 맞추기에서 19.999초에 멈춤' },
-    { id:'double', kind:'stop', at:[20000], label:'2️⃣곱빼기2️⃣', cond:'시간 맞추기에서 20.000초에 멈춤' },
-    { id:'correct', kind:'stop', at:[10000], label:'⭕️정답구역⭕️', cond:'시간 맞추기에서 10.000초에 멈춤' },
-    { id:'casual', kind:'react', lt:500, label:'😑일반인😑', cond:'반응속도에서 500ms미만 달성' },
-    { id:'novice', kind:'react', lt:400, label:'😐초보😐', cond:'반응속도에서 400ms미만 달성' },
-    { id:'mid', kind:'react', lt:350, label:'🙂중수🙂', cond:'반응속도에서 350ms미만 달성' },
-    { id:'pro', kind:'react', lt:300, label:'😊고수😊', cond:'반응속도에서 300ms미만 달성' },
-    { id:'expert', kind:'react', lt:250, label:'😀초고수😀', cond:'반응속도에서 250ms미만 달성' },
-    { id:'master', kind:'react', lt:200, label:'😄마스터😄', cond:'반응속도에서 200ms미만 달성' },
-    { id:'legend', kind:'react', lt:175, label:'😃레전드😃', cond:'반응속도에서 175ms미만 달성' },
-    { id:'epic', kind:'react', lt:150, label:'😆역대급😆', cond:'반응속도에서 150ms미만 달성' },
-    { id:'human', kind:'react', lt:125, label:'❗초인❗', cond:'반응속도에서 125ms미만 달성' },
-    { id:'fast', kind:'react', lt:100, label:'‼️빛보다 빠른 손‼️', cond:'반응속도에서 100ms미만 달성' },
-    { id:'god', kind:'react', lt:50, label:'✨️신✨️', cond:'반응속도에서 50ms미만 달성' },
+    { id:'solo', kind:'stop', at:[1111, 11111], label:'👤솔로👤', cond:'10초 딱에서 1.111초 또는 11.111초에 멈춤' },
+    { id:'couple', kind:'stop', at:[2222, 12222], label:'👥짝이 생긴👥', cond:'10초 딱에서 2.222초 또는 12.222초에 멈춤' },
+    { id:'group3', kind:'stop', at:[3333, 13333], label:'3️⃣3인분3️⃣', cond:'10초 딱에서 3.333초 또는 13.333초에 멈춤' },
+    { id:'escape', kind:'stop', at:[4444, 14444], label:'⚰️구사일생⚰️', cond:'10초 딱에서 4.444초 또는 14.444초에 멈춤' },
+    { id:'half', kind:'stop', at:[5555, 15555], label:'🌓반달🌗', cond:'10초 딱에서 5.555초 또는 15.555초에 멈춤' },
+    { id:'meat', kind:'stop', at:[6666, 16666], label:'🍖육식🍖', cond:'10초 딱에서 6.666초 또는 16.666초에 멈춤' },
+    { id:'lucky', kind:'stop', at:[7777], label:'🍀행운🍀', cond:'10초 딱에서 7.777초에 멈춤' },
+    { id:'lucky_happy', kind:'stop', at:[17777], label:'☘️행운대신 행복☘️', cond:'10초 딱에서 17.777초에 멈춤' },
+    { id:'snowman', kind:'stop', at:[8888, 18888], label:'⛄️눈사람⛄️', cond:'10초 딱에서 8.888초 또는 18.888초에 멈춤' },
+    { id:'pigeon', kind:'stop', at:[9999], label:'🕊비둘기 울음소리🕊', cond:'10초 딱에서 9.999초에 멈춤' },
+    { id:'times', kind:'stop', at:[19999], label:'✖️곱하기 1.9999✖️', cond:'10초 딱에서 19.999초에 멈춤' },
+    { id:'double', kind:'stop', at:[20000], label:'2️⃣곱빼기2️⃣', cond:'10초 딱에서 20.000초에 멈춤' },
+    { id:'correct', kind:'stop', at:[10000], label:'⭕️정답구역⭕️', cond:'10초 딱에서 10.000초에 멈춤' },
+    { id:'casual', kind:'react', lt:500, label:'😑일반인😑', cond:'번개 터치에서 500ms미만 달성' },
+    { id:'novice', kind:'react', lt:400, label:'😐초보😐', cond:'번개 터치에서 400ms미만 달성' },
+    { id:'mid', kind:'react', lt:350, label:'🙂중수🙂', cond:'번개 터치에서 350ms미만 달성' },
+    { id:'pro', kind:'react', lt:300, label:'😊고수😊', cond:'번개 터치에서 300ms미만 달성' },
+    { id:'expert', kind:'react', lt:250, label:'😀초고수😀', cond:'번개 터치에서 250ms미만 달성' },
+    { id:'master', kind:'react', lt:200, label:'😄마스터😄', cond:'번개 터치에서 200ms미만 달성' },
+    { id:'legend', kind:'react', lt:175, label:'😃레전드😃', cond:'번개 터치에서 175ms미만 달성' },
+    { id:'epic', kind:'react', lt:150, label:'😆역대급😆', cond:'번개 터치에서 150ms미만 달성' },
+    { id:'human', kind:'react', lt:125, label:'❗초인❗', cond:'번개 터치에서 125ms미만 달성' },
+    { id:'fast', kind:'react', lt:100, label:'‼️빛보다 빠른 손‼️', cond:'번개 터치에서 100ms미만 달성' },
+    { id:'god', kind:'react', lt:50, label:'✨️신✨️', cond:'번개 터치에서 50ms미만 달성' },
     { id:'top7', kind:'league', label:'7️⃣TOP7️⃣', cond:'리그에서 6~7위 달성' },
     { id:'best5', kind:'league', label:'5️⃣TOP5️⃣', cond:'리그에서 4~5위 달성' },
     { id:'bronze', kind:'league', label:'🥉동메달🥉', cond:'리그에서 3위 달성' },
@@ -632,8 +648,9 @@ h2{font-size:17px;margin:0 0 12px}
     stop: '시작을 누르고 10초라고 생각되는 순간 멈추세요. 숫자는 멈출 때까지 보이지 않아요. 10.000초에 가까울수록 좋아요.',
     sort: '블록 색에 맞는 화살표를 누르세요. 왼쪽 색은 ← 왼쪽, 오른쪽 색은 오른쪽 → 으로 보내요. 한 번이라도 틀리면 끝나요. 처음에는 60초가 주어져요.',
     mole: '30초 동안 두더지를 누르세요. 🐹 일반 두더지 +1점, 🌟 황금 두더지 +2점, 💣 폭탄 두더지 -3점. 추가 시간은 없어요.',
-    dino: '선인장 🌵은 점프해서 넘고, 새 🐦는 숙여서 피하세요. 화면을 누르거나 점프 버튼으로 점프해요. 부딪히면 끝나고, 달린 거리(m)가 기록이 돼요.',
-    typo: '60초 동안 똑같은 단어 중 오타인 단어 1개를 찾아 누르세요. 찾으면 +5점, 다른 단어를 누르면 -2점. 추가 시간은 없어요.'
+    dino: '선인장 🌵을 점프해서 넘으세요. 🌵🌵처럼 여러 개 붙어 있는 선인장도 있어요. 화면을 누르거나 점프 버튼으로 뛰어요. 부딪히면 끝나고, 달린 거리(m)가 기록이 돼요.',
+    typo: '60초 동안 똑같은 단어 중 오타인 단어 1개를 찾아 누르세요. 찾으면 +5점, 다른 단어를 누르면 -2점. 추가 시간은 없어요.',
+    shoot: '농구공을 골대 쪽으로 위로 밀어 올리듯 스와이프하세요. 들어가면 +1점, 3연속 성공 +1점 보너스, 5연속 +2점, 7연속 +3점, 10연속 +10점 보너스. 60초가 끝나면 게임이 끝나요.'
   };
 
   function stopCurrent(reason){
@@ -641,6 +658,7 @@ h2{font-size:17px;margin:0 0 12px}
     if (MO.running) moleEnd(reason);
     if (DN.running) dinoEnd(reason);
     if (TY.running) typoEnd(reason);
+    if (BB.running) shootEnd(reason);
   }
 
   function setMode(m){
@@ -655,6 +673,7 @@ h2{font-size:17px;margin:0 0 12px}
     $('#mole-area').hidden = m !== 'mole';
     $('#dino-area').hidden = m !== 'dino';
     $('#typo-area').hidden = m !== 'typo';
+    $('#shoot-area').hidden = m !== 'shoot';
     resetGame();
   }
   document.querySelectorAll('[data-mode]').forEach(function(t){
@@ -701,6 +720,7 @@ h2{font-size:17px;margin:0 0 12px}
     if (mode === 'mole') moleIdle();
     if (mode === 'dino') dinoReset();
     if (mode === 'typo') typoIdle();
+    if (mode === 'shoot') shootIdle();
   }
 
   /* ---------- 반응속도, 스톱워치 ---------- */
@@ -963,7 +983,7 @@ h2{font-size:17px;margin:0 0 12px}
     cx.textBaseline = 'bottom';
     cx.fillText('🦖', DINO_X, DN.y + h + 4);
     DN.obs.forEach(function(o){
-      cx.fillText(o.type === 'c' ? '🌵' : '🐦', o.x, o.y + o.h + 4);
+      for (var i = 0; i < o.n; i++) cx.fillText('🌵', o.x + i * 22, o.y + o.h + 4);
     });
   }
   function dinoReset(){
@@ -977,7 +997,7 @@ h2{font-size:17px;margin:0 0 12px}
   }
   function dinoJump(){
     if (!DN.running || !DN.onGround) return;
-    DN.vy = -11.5;
+    DN.vy = -9;
     DN.onGround = false;
   }
   function dinoStart(){
@@ -1006,12 +1026,9 @@ h2{font-size:17px;margin:0 0 12px}
     DN.dist += speed * f;
     if (DN.dist >= DN.nextSpawn){
       var r = Math.random();
-      if (r < 0.7){
-        DN.obs.push({ type:'c', x: CW + 10, y: GROUND - 34, w: 18, h: 34 });
-      } else {
-        DN.obs.push({ type:'b', x: CW + 10, y: GROUND - 44, w: 30, h: 20 });
-      }
-      DN.nextSpawn = DN.dist + 220 + Math.random() * 240 + speed * 8;
+      var cnt = r < 0.5 ? 1 : (r < 0.85 ? 2 : 3);
+      DN.obs.push({ type:'c', n: cnt, x: CW + 10, y: GROUND - 34, w: cnt * 22 - 4, h: 34 });
+      DN.nextSpawn = DN.dist + 380 + Math.random() * 300 + speed * 10;
     }
     DN.obs.forEach(function(o){ o.x -= speed * f; });
     DN.obs = DN.obs.filter(function(o){ return o.x + o.w > -10; });
@@ -1043,10 +1060,7 @@ h2{font-size:17px;margin:0 0 12px}
   $('#d-jump').addEventListener('click', function(){
     if (!DN.running) dinoStart(); else dinoJump();
   });
-  $('#d-duck').addEventListener('pointerdown', function(){ DN.duck = true; });
-  ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
-    $('#d-duck').addEventListener(ev, function(){ DN.duck = false; });
-  });
+  // 새 장애물을 없애서 숙이기 버튼은 뺐어요.
   cv.addEventListener('pointerdown', function(){ dinoJump(); });
   document.addEventListener('keydown', function(e){
     if (mode !== 'dino' || panel !== 'home') return;
@@ -1134,6 +1148,152 @@ h2{font-size:17px;margin:0 0 12px}
     }
   }
   $('#t-start').addEventListener('click', typoStart);
+
+  /* ---------- 불꽃 슈팅 (농구 자유투) ---------- */
+  var bcv = $('#b-canvas'), bcx = bcv.getContext('2d');
+  var BW = 360, BH = 320, HOOP_X = 180, HOOP_Y = 80, RIM = 26;
+  var BALL_START = { x: 180, y: 280 };
+  var BONUS = { 3:1, 5:2, 7:3, 10:10 };
+  function makeBB(){
+    return { running:false, ended:false, flying:false, score:0, streak:0, left:60000, last:0, timer:0,
+             path:[], idx:0, made:false, ball:{ x:BALL_START.x, y:BALL_START.y }, drag:null, raf:0 };
+  }
+  var BB = makeBB();
+
+  function shootDraw(){
+    bcx.clearRect(0, 0, BW, BH);
+    bcx.fillStyle = '#c9ced6';
+    bcx.fillRect(HOOP_X - 42, HOOP_Y - 52, 84, 48);
+    bcx.strokeStyle = '#e53935'; bcx.lineWidth = 4;
+    bcx.beginPath(); bcx.moveTo(HOOP_X - RIM, HOOP_Y); bcx.lineTo(HOOP_X + RIM, HOOP_Y); bcx.stroke();
+    bcx.font = '34px sans-serif'; bcx.textAlign = 'center'; bcx.textBaseline = 'middle';
+    bcx.fillText('🏀', BB.ball.x, BB.ball.y);
+  }
+  function shootIdle(){
+    cancelAnimationFrame(BB.raf);
+    clearInterval(BB.timer);
+    BB = makeBB();
+    $('#b-start').disabled = false;
+    $('#b-start').textContent = '시작';
+    $('#b-score').textContent = '0';
+    $('#b-streak').textContent = '0';
+    $('#b-time').textContent = '60.0초';
+    $('#b-msg').textContent = '';
+    shootDraw();
+  }
+  function shootStart(){
+    if (BB.running) return;
+    shootIdle();
+    BB.running = true;
+    BB.last = performance.now();
+    BB.timer = setInterval(shootTick, 100);
+    $('#b-start').disabled = true;
+  }
+  function shootTick(){
+    if (!BB.running || BB.ended) return;
+    var now = performance.now();
+    BB.left -= now - BB.last;
+    BB.last = now;
+    if (BB.left <= 0){
+      BB.left = 0;
+      BB.ended = true;
+      $('#b-time').textContent = '0.0초';
+      if (!BB.flying) shootEnd('time');
+      return;
+    }
+    $('#b-time').textContent = (BB.left / 1000).toFixed(1) + '초';
+  }
+  function shootPoint(e){
+    var r = bcv.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * BW / r.width, y: (e.clientY - r.top) * BH / r.height };
+  }
+  bcv.addEventListener('pointerdown', function(e){
+    if (!BB.running || BB.ended || BB.flying) return;
+    BB.drag = shootPoint(e);
+  });
+  bcv.addEventListener('pointerup', function(e){
+    if (!BB.drag) return;
+    var p = shootPoint(e), s = BB.drag;
+    BB.drag = null;
+    if (!BB.running || BB.ended || BB.flying) return;
+    var dx = p.x - s.x, dy = p.y - s.y;
+    if (dy > -40 || Math.hypot(dx, dy) < 60){
+      noteEl($('#b-msg'), '공을 위로 더 길게 밀어 주세요', 'saved bad');
+      return;
+    }
+    shootThrow(dx, dy);
+  });
+  bcv.addEventListener('pointercancel', function(){ BB.drag = null; });
+
+  // 공의 궤적을 계산해서 골대를 통과하는지 확인
+  function shootSim(dx, dy){
+    var vx = dx * 0.008, vy = dy * 0.07, x = BALL_START.x, y = BALL_START.y, path = [];
+    for (var t = 0; t < 240; t++){
+      var py = y;
+      x += vx; y += vy; vy += 0.3;
+      path.push({ x: x, y: y });
+      if (py < HOOP_Y && y >= HOOP_Y){
+        return { path: path, made: Math.abs(x - HOOP_X) <= RIM };
+      }
+      if (y > BH + 40) break;
+    }
+    return { path: path, made: false };
+  }
+  function shootThrow(dx, dy){
+    var sim = shootSim(dx, dy);
+    BB.flying = true;
+    BB.made = sim.made;
+    BB.path = sim.path;
+    BB.idx = 0;
+    BB.raf = requestAnimationFrame(shootFrame);
+  }
+  function shootFrame(){
+    var p = BB.path[BB.idx];
+    if (!p){ shootLanded(); return; }
+    BB.ball = { x: p.x, y: p.y };
+    shootDraw();
+    if (BB.idx >= BB.path.length - 1){ shootLanded(); return; }
+    BB.idx++;
+    BB.raf = requestAnimationFrame(shootFrame);
+  }
+  function shootLanded(){
+    BB.flying = false;
+    if (BB.running){
+      if (BB.made){
+        BB.streak++;
+        var b = BONUS[BB.streak] || 0;
+        var pts = 1 + b;
+        BB.score += pts;
+        noteEl($('#b-msg'), '골! +' + pts + '점' + (b ? ' · 🔥 ' + BB.streak + '연속 보너스 +' + b : ''), 'saved ok');
+      } else {
+        BB.streak = 0;
+        noteEl($('#b-msg'), '빗나갔어요', 'saved bad');
+      }
+      $('#b-score').textContent = BB.score;
+      $('#b-streak').textContent = BB.streak;
+    }
+    setTimeout(function(){
+      if (!BB.flying){ BB.ball = { x: BALL_START.x, y: BALL_START.y }; shootDraw(); }
+    }, 500);
+    if (BB.running && BB.ended) shootEnd('time');
+  }
+  function shootEnd(reason){
+    if (!BB.running) return;
+    cancelAnimationFrame(BB.raf);
+    BB.flying = false;
+    BB.running = false;
+    BB.ended = false;
+    clearInterval(BB.timer);
+    BB.ball = { x: BALL_START.x, y: BALL_START.y };
+    shootDraw();
+    $('#b-start').disabled = false;
+    $('#b-start').textContent = '다시 시작';
+    var head = reason === 'time' ? '시간 종료!' : '게임을 나갔어요.';
+    if (BB.score !== 0 || reason !== 'quit'){
+      saveResult('shoot', BB.score, null, $('#b-msg'), head + ' ' + BB.score + '점');
+    }
+  }
+  $('#b-start').addEventListener('click', shootStart);
 
   /* ---------- 전체 순위 ---------- */
   function loadBoard(){
