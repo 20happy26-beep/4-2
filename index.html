@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#e4572e">
-<title>반응속도 · 스톱워치 · 분류 게임</title>
+<title>우리반 오락실</title>
 <style>
 :root{
   --bg:#f5f3ee; --card:#ffffff; --fg:#1d1d21; --muted:#6c6c75; --line:#e4e1da;
@@ -15,7 +15,7 @@
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --bg:#131316; --card:#1d1d22; --fg:#ececf0; --muted:#9a9aa4; --line:#2d2d34;
-    --accent:#ff7a52; --accent-fg:#131316; --ok:#4cc27c; --stop:#ff6b5e;
+    --accent:#ff7a52; --accent-fg:#131316; --ok:#4cc27c; --stop:#ff6b6e;
     --gold:#e8b630; --silver:#b4bcc6; --bronze:#d08a4e;
     color-scheme:dark;
   }
@@ -30,14 +30,14 @@ body{
 }
 .wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
 [hidden]{display:none!important}
-h1{font-size:22px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1{font-size:24px;margin:0;letter-spacing:-.01em;text-wrap:balance}
 h2{font-size:17px;margin:0 0 12px}
 .sub{color:var(--muted);margin:4px 0 0;font-size:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
 .tabs{display:flex;gap:8px;flex-wrap:wrap}
 .tab{
-  flex:1 1 110px; padding:10px 12px; border-radius:10px; border:1px solid var(--line);
-  background:transparent; color:var(--fg); font:inherit; font-weight:600; cursor:pointer;
+  flex:1 1 96px; padding:10px 8px; border-radius:10px; border:1px solid var(--line);
+  background:transparent; color:var(--fg); font:inherit; font-weight:600; cursor:pointer; font-size:14px;
 }
 .tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
 .tab:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -92,8 +92,15 @@ h2{font-size:17px;margin:0 0 12px}
 .saved.ok{color:var(--ok)}
 .saved.bad{color:var(--stop)}
 
+/* 공통 게임 화면 */
+.g-status{display:flex;justify-content:space-between;font-weight:700;margin-top:14px;flex-wrap:wrap;gap:6px;font-variant-numeric:tabular-nums}
+.g-status b{font-size:18px}
+.s-hint{color:var(--muted);font-size:14px;text-align:center;margin:10px 0 0}
+.s-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.sbtn{padding:18px 8px;border-radius:14px;border:1px solid var(--line);background:var(--card);font:inherit;font-size:17px;font-weight:700;color:var(--fg);cursor:pointer;touch-action:manipulation}
+.sbtn:disabled{opacity:.4;cursor:default}
+
 /* 분류 게임 */
-.s-status{display:flex;justify-content:space-between;font-weight:700;margin-top:14px;flex-wrap:wrap;gap:6px;font-variant-numeric:tabular-nums}
 .s-bins{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .bin{border:1px dashed var(--line);border-radius:12px;padding:10px 6px;text-align:center;min-width:0}
 .bin .bl{font-size:12.5px;color:var(--muted);font-weight:700}
@@ -101,10 +108,28 @@ h2{font-size:17px;margin:0 0 12px}
 .chip{width:26px;height:26px;border-radius:50%;border:2px solid var(--line)}
 .s-area{min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:10px;gap:8px}
 .piece{width:120px;height:120px;border-radius:50%;border:4px solid var(--line);box-shadow:0 6px 16px rgba(0,0,0,.15)}
-.s-hint{color:var(--muted);font-size:14px;text-align:center}
-.s-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.sbtn{padding:18px 8px;border-radius:14px;border:1px solid var(--line);background:var(--card);font:inherit;font-size:17px;font-weight:700;color:var(--fg);cursor:pointer}
-.sbtn:disabled{opacity:.4;cursor:default}
+
+/* 두더지 */
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.hole{
+  aspect-ratio:1; border-radius:50%; border:2px solid var(--line); background:#6b4a2b;
+  font-size:40px; display:flex; align-items:center; justify-content:center; padding:0; cursor:pointer;
+  box-shadow:inset 0 8px 14px rgba(0,0,0,.45); touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+}
+.hole.gold{background:#c9a227}
+.hole.bomb{background:#a33a2d}
+
+/* 공룡 */
+#d-canvas{display:block;width:100%;max-width:360px;margin:12px auto 0;background:var(--bg);border-radius:12px;border:1px solid var(--line);touch-action:none}
+
+/* 숨은 오타 */
+.tgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-top:12px}
+.cell{
+  aspect-ratio:1.3; padding:0; border:1px solid var(--line); border-radius:4px; background:var(--bg); color:var(--fg);
+  font:inherit; font-size:10px; letter-spacing:-.5px; cursor:pointer; min-width:0; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; touch-action:manipulation;
+}
+.cell:disabled{cursor:default;opacity:.8}
 
 /* 순위 */
 .podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;margin-top:16px;margin-bottom:16px}
@@ -144,7 +169,7 @@ h2{font-size:17px;margin:0 0 12px}
 <div class="wrap">
 
   <header>
-    <h1>반응속도 · 스톱워치 · 분류 게임</h1>
+    <h1>우리반 오락실</h1>
     <p class="sub">번호를 입력하고 들어가서 우리 반 최고 기록에 도전해 보세요.</p>
   </header>
 
@@ -189,6 +214,9 @@ h2{font-size:17px;margin:0 0 12px}
           <button class="tab" role="tab" aria-selected="true" data-mode="react">반응속도</button>
           <button class="tab" role="tab" aria-selected="false" data-mode="stop">스톱워치</button>
           <button class="tab" role="tab" aria-selected="false" data-mode="sort">분류게임</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="mole">두더지</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="dino">공룡 달리기</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="typo">숨은 오타</button>
         </div>
         <p class="rule" id="rule"></p>
 
@@ -203,7 +231,7 @@ h2{font-size:17px;margin:0 0 12px}
 
         <!-- 분류게임 -->
         <div id="sort-area" hidden>
-          <div class="s-status">
+          <div class="g-status">
             <span id="s-stage">1단계</span>
             <span id="s-count">정답 0개</span>
             <span id="s-time">60.0초</span>
@@ -214,14 +242,53 @@ h2{font-size:17px;margin:0 0 12px}
           </div>
           <div class="s-area">
             <div class="piece" id="s-piece" hidden></div>
-            <div class="s-hint" id="s-hint">시작을 누르고 블록을 맞는 쪽으로 보내세요</div>
           </div>
+          <p class="s-hint" id="s-hint">시작을 누르고 블록을 맞는 쪽으로 보내세요</p>
           <div class="s-btns">
             <button class="sbtn" id="s-left" disabled>← 왼쪽</button>
             <button class="sbtn" id="s-right" disabled>오른쪽 →</button>
           </div>
           <div class="row"><button class="btn primary" id="s-start">시작</button></div>
           <p class="saved" id="s-msg"></p>
+        </div>
+
+        <!-- 두더지 -->
+        <div id="mole-area" hidden>
+          <div class="g-status">
+            <span>점수 <b id="m-score">0</b></span>
+            <span id="m-time">30.0초</span>
+          </div>
+          <div class="mgrid" id="m-grid"></div>
+          <p class="s-hint">🐹 +1점 · 🌟 +2점 · 💣 -3점</p>
+          <div class="row"><button class="btn primary" id="m-start">시작</button></div>
+          <p class="saved" id="m-msg"></p>
+        </div>
+
+        <!-- 공룡 달리기 -->
+        <div id="dino-area" hidden>
+          <div class="g-status">
+            <span>거리 <b id="d-score">0 m</b></span>
+            <span>🌵 점프 · 🐦 숙이기</span>
+          </div>
+          <canvas id="d-canvas" width="360" height="160"></canvas>
+          <div class="s-btns">
+            <button class="sbtn" id="d-jump">⬆ 점프</button>
+            <button class="sbtn" id="d-duck">⬇ 숙이기</button>
+          </div>
+          <div class="row"><button class="btn primary" id="d-start">시작</button></div>
+          <p class="saved" id="d-msg"></p>
+        </div>
+
+        <!-- 숨은 오타 찾기 -->
+        <div id="typo-area" hidden>
+          <div class="g-status">
+            <span>점수 <b id="t-score">0</b></span>
+            <span id="t-time">60.0초</span>
+          </div>
+          <p class="s-hint">똑같은 단어 중 <b>오타인 단어 1개</b>를 찾아 누르세요. 찾으면 +5점, 다른 단어를 누르면 -2점</p>
+          <div class="tgrid" id="t-grid"></div>
+          <div class="row"><button class="btn primary" id="t-start">시작</button></div>
+          <p class="saved" id="t-msg"></p>
         </div>
       </section>
 
@@ -241,6 +308,9 @@ h2{font-size:17px;margin:0 0 12px}
           <button class="tab" role="tab" aria-selected="true" data-lb="react">반응속도</button>
           <button class="tab" role="tab" aria-selected="false" data-lb="stop">스톱워치</button>
           <button class="tab" role="tab" aria-selected="false" data-lb="sort">분류게임</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="mole">두더지</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="dino">공룡 달리기</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="typo">숨은 오타</button>
         </div>
         <div class="podium" id="podium"></div>
         <p class="empty" id="empty" hidden></p>
@@ -255,6 +325,9 @@ h2{font-size:17px;margin:0 0 12px}
           <button class="tab" role="tab" aria-selected="true" data-lgm="react">반응속도</button>
           <button class="tab" role="tab" aria-selected="false" data-lgm="stop">스톱워치</button>
           <button class="tab" role="tab" aria-selected="false" data-lgm="sort">분류게임</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="mole">두더지</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="dino">공룡 달리기</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="typo">숨은 오타</button>
         </div>
         <div class="head-row" style="margin-top:14px">
           <h2 id="lg-sport" style="margin:0">리그</h2>
@@ -302,6 +375,19 @@ h2{font-size:17px;margin:0 0 12px}
   };
   var NONE = 999999, DAY = 86400000;
 
+  // 게임 목록: high = 점수가 높을수록 좋은 게임
+  var GAMES = {
+    react:{ label:'반응속도', high:false, unit:function(v){ return v + ' ms'; } },
+    stop:{ label:'스톱워치', high:false, unit:function(v){ return '차이 ' + v + ' ms'; } },
+    sort:{ label:'분류게임', high:true, unit:function(v){ return v + ' 개'; } },
+    mole:{ label:'두더지', high:true, unit:function(v){ return v + ' 점'; } },
+    dino:{ label:'공룡 달리기', high:true, unit:function(v){ return v + ' m'; } },
+    typo:{ label:'숨은 오타', high:true, unit:function(v){ return v + ' 점'; } }
+  };
+  var MODES = ['react','stop','sort','mole','dino','typo'];
+  function isHigh(m){ return GAMES[m].high; }
+  function fmt(m, v){ return GAMES[m].unit(v); }
+
   var TITLES = [
     { id:'solo', kind:'stop', at:[1111, 11111], label:'👤솔로👤', cond:'시간 맞추기에서 1.111초 또는 11.111초에 멈춤' },
     { id:'couple', kind:'stop', at:[2222, 12222], label:'👥짝이 생긴👥', cond:'시간 맞추기에서 2.222초 또는 12.222초에 멈춤' },
@@ -342,42 +428,34 @@ h2{font-size:17px;margin:0 0 12px}
   TITLES.forEach(function(t){ BY_ID[t.id] = t; });
   function labelOf(id){ return id && BY_ID[id] ? BY_ID[id].label : null; }
 
-  // 분류 게임 색깔과 맞는 쪽 (L: 왼쪽 화살표, R: 오른쪽 화살표)
+  // 분류 게임 색깔 (L: 왼쪽 화살표, R: 오른쪽 화살표)
   var COLOR = {
     red:'#e53935', blue:'#1e88e5', yellow:'#fdd835', green:'#43a047',
     orange:'#fb8c00', purple:'#8e24aa', black:'#212121', white:'#fafafa'
   };
+
+  // 오타 찾기 단어 (맞는 단어, 오타 단어)
+  var TYPO_PAIRS = [
+    ['강아지','강아자'], ['컴퓨터','컴퓨타'], ['선생님','선생임'], ['바나나','바나마'],
+    ['도서관','도서판'], ['지우개','지우게'], ['운동장','운동잘']
+  ];
 
   var me = null, panel = 'home', mode = 'react', lbMode = 'react', lbPeriod = 'all', lgMode = 'react';
   var league = null;
   var rtTimer = 0, phase = 'idle', swPhase = 'idle', swStart = 0, rtGoAt = 0;
   var play = $('#play'), big = $('#big'), hint = $('#hint');
 
-  // 분류 게임 상태
   var S = { running:false, correct:0, left:60000, last:0, timer:0, piece:null };
+  var MO = { running:false, score:0, left:30000, last:0, timer:0, holes:[null,null,null,null,null,null,null,null,null], spawnAt:0 };
+  var DN = { running:false, dist:0, y:0, vy:0, onGround:true, duck:false, obs:[], nextSpawn:0, last:0, raf:0 };
+  var TY = { running:false, score:0, left:60000, last:0, timer:0, answer:-1 };
+  var GROUND = 140, DINO_X = 40, CW = 360, CH = 160;
 
   /* ---------- helpers ---------- */
-  function coded(code){ var e = new Error(code); e.code = code; return e; }
   function errText(e){ return (e && (e.message || e.code)) || '알 수 없는 오류'; }
   function honor(p){ return p.no === 0 ? p.name : p.name + ' 님'; }
   function honorRow(r){ return (r.title ? r.title + ' ' : '') + (r.no === 0 ? r.name : r.name + ' 님'); }
   function dispName(r){ return (r.title ? r.title + ' ' : '') + r.name; }
-  function fmt(m, v){
-    if (m === 'react') return v + ' ms';
-    if (m === 'stop') return '차이 ' + v + ' ms';
-    return v + ' 개';
-  }
-  // 분류 게임은 정답이 많을수록 좋고, 나머지는 작을수록 좋아요
-  function isBetter(m, a, b){ return m === 'sort' ? a > b : a < b; }
-  function scoreSort(m){ return function(a, b){
-    var d = m === 'sort' ? (Number(b.score) - Number(a.score)) : (Number(a.score) - Number(b.score));
-    return d || (new Date(a.created_at) - new Date(b.created_at));
-  }; }
-  function bestSort(m){ return function(a, b){
-    var d = m === 'sort' ? (Number(b.best) - Number(a.best)) : (Number(a.best) - Number(b.best));
-    return d || (Number(a.at) - Number(b.at));
-  }; }
-
   function weekMonday(offset){
     var d = new Date(Date.now() + 9 * 3600000);
     var dow = (d.getUTCDay() + 6) % 7;
@@ -387,8 +465,9 @@ h2{font-size:17px;margin:0 0 12px}
   function weekKey(mon){ return new Date(mon).toISOString().slice(0, 10); }
   function fmtDay(ts){ var d = new Date(ts); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
   function weekRange(mon){ return fmtDay(mon) + ' ~ ' + fmtDay(mon + 6 * DAY); }
+  function noteEl(el, text, cls){ el.className = cls || 'saved ok'; el.textContent = text; }
 
-  // 기간 선택: 한국 시간 기준
+  // 기간 선택 (한국 시간 기준)
   function rangeOf(k){
     var now = Date.now();
     var todayStart = Math.floor((now + 9 * 3600000) / DAY) * DAY - 9 * 3600000;
@@ -401,20 +480,18 @@ h2{font-size:17px;margin:0 0 12px}
     return r;
   }
 
-  // 게임 기록 한 번 저장 (자동)
+  // 결과를 자동 저장 (전체 기록 + 이번 주 리그)
   function saveResult(m, score, elapsed, msgEl, prefix){
-    msgEl.className = 'saved'; msgEl.textContent = '저장하는 중...';
+    noteEl(msgEl, '저장하는 중...', 'saved');
     return db.rpc('save_result', { p_no: me.no, p_mode: m, p_score: score, p_elapsed: elapsed })
       .then(function(r){
         if (r.error) throw r.error;
         return grantIds(recordTitles(m, score, elapsed));
       }).then(function(){
-        msgEl.className = 'saved ok';
-        msgEl.textContent = (prefix ? prefix + ' · ' : '') + '자동 저장됐어요 ✓';
+        noteEl(msgEl, (prefix ? prefix + ' · ' : '') + '자동 저장됐어요 ✓', 'saved ok');
         return refreshAll();
       }).catch(function(e){
-        msgEl.className = 'saved bad';
-        msgEl.textContent = '저장하지 못했어요: ' + errText(e);
+        noteEl(msgEl, '저장하지 못했어요: ' + errText(e), 'saved bad');
       });
   }
 
@@ -431,6 +508,22 @@ h2{font-size:17px;margin:0 0 12px}
     return db.rpc('grant_titles', { p_no: me.no, p_ids: ids }).then(function(r){ if (r.error) throw r.error; });
   }
 
+  // 순위 정렬 (게임마다 높은 게임과 낮은 게임이 다름)
+  function sortRows(m){
+    return function(a, b){
+      var va = Number(a.score), vb = Number(b.score);
+      var d = isHigh(m) ? (vb - va) : (va - vb);
+      return d || (new Date(a.created_at) - new Date(b.created_at));
+    };
+  }
+  function sortBest(m){
+    return function(a, b){
+      var va = Number(a.best), vb = Number(b.best);
+      var d = isHigh(m) ? (vb - va) : (va - vb);
+      return d || (Number(a.at) - Number(b.at));
+    };
+  }
+
   // 목록의 각 사람에게 장착 칭호 붙이기
   function attachTitles(rows){
     var nos = [];
@@ -445,7 +538,6 @@ h2{font-size:17px;margin:0 0 12px}
     });
   }
 
-  // 이 기기에 번호 기억
   function getSavedNo(){
     try { var v = localStorage.getItem('myNo'); return v === null ? null : parseInt(v, 10); } catch(e){ return null; }
   }
@@ -485,10 +577,9 @@ h2{font-size:17px;margin:0 0 12px}
   });
 
   $('#change-no').addEventListener('click', function(){
+    stopCurrent('quit');
     setSavedNo(null);
     me = null;
-    if (S.running) sortEnd('quit');
-    resetGame();
     showEntry();
   });
 
@@ -521,7 +612,7 @@ h2{font-size:17px;margin:0 0 12px}
 
   /* ---------- 아래 탭 ---------- */
   function showPanel(p){
-    if (S.running) sortEnd('quit');
+    stopCurrent('quit');
     panel = p;
     $('#panel-home').hidden = p !== 'home';
     $('#panel-league').hidden = p !== 'league';
@@ -537,19 +628,33 @@ h2{font-size:17px;margin:0 0 12px}
 
   /* ---------- 게임 고르기 ---------- */
   var RULE = {
-    react: '초록색으로 바뀌면 최대한 빨리 누르세요. 너무 빨리 누르면 실격입니다. 점수는 짧을수록 좋아요. 기록은 자동으로 저장돼요.',
-    stop: '시작을 누르고 10초라고 생각되는 순간 멈추세요. 숫자는 멈출 때까지 보이지 않아요. 10.000초에 가까울수록 좋아요. 기록은 자동으로 저장돼요.',
-    sort: '블록 색에 맞는 화살표를 누르세요. 왼쪽 색은 ← 왼쪽, 오른쪽 색은 오른쪽 → 으로 보내요. 한 번이라도 틀리면 끝나요. 처음에는 60초가 주어져요. 끝나면 정답 개수가 자동으로 저장돼요.'
+    react: '초록색으로 바뀌면 최대한 빨리 누르세요. 너무 빨리 누르면 실격입니다. 점수는 짧을수록 좋아요.',
+    stop: '시작을 누르고 10초라고 생각되는 순간 멈추세요. 숫자는 멈출 때까지 보이지 않아요. 10.000초에 가까울수록 좋아요.',
+    sort: '블록 색에 맞는 화살표를 누르세요. 왼쪽 색은 ← 왼쪽, 오른쪽 색은 오른쪽 → 으로 보내요. 한 번이라도 틀리면 끝나요. 처음에는 60초가 주어져요.',
+    mole: '30초 동안 두더지를 누르세요. 🐹 일반 두더지 +1점, 🌟 황금 두더지 +2점, 💣 폭탄 두더지 -3점. 추가 시간은 없어요.',
+    dino: '선인장 🌵은 점프해서 넘고, 새 🐦는 숙여서 피하세요. 화면을 누르거나 점프 버튼으로 점프해요. 부딪히면 끝나고, 달린 거리(m)가 기록이 돼요.',
+    typo: '60초 동안 똑같은 단어 중 오타인 단어 1개를 찾아 누르세요. 찾으면 +5점, 다른 단어를 누르면 -2점. 추가 시간은 없어요.'
   };
+
+  function stopCurrent(reason){
+    if (S.running) sortEnd(reason);
+    if (MO.running) moleEnd(reason);
+    if (DN.running) dinoEnd(reason);
+    if (TY.running) typoEnd(reason);
+  }
+
   function setMode(m){
-    if (S.running) sortEnd('quit');
+    stopCurrent('quit');
     mode = m;
     document.querySelectorAll('[data-mode]').forEach(function(t){
       t.setAttribute('aria-selected', String(t.dataset.mode === m));
     });
     $('#rule').textContent = RULE[m];
-    $('#play-area').hidden = m === 'sort';
+    $('#play-area').hidden = !(m === 'react' || m === 'stop');
     $('#sort-area').hidden = m !== 'sort';
+    $('#mole-area').hidden = m !== 'mole';
+    $('#dino-area').hidden = m !== 'dino';
+    $('#typo-area').hidden = m !== 'typo';
     resetGame();
   }
   document.querySelectorAll('[data-mode]').forEach(function(t){
@@ -580,7 +685,6 @@ h2{font-size:17px;margin:0 0 12px}
     });
   });
 
-  /* ---------- 반응속도, 스톱워치 ---------- */
   function resetGame(){
     clearTimeout(rtTimer);
     phase = 'idle'; swPhase = 'idle';
@@ -594,7 +698,12 @@ h2{font-size:17px;margin:0 0 12px}
       big.style.opacity = '.35';
     }
     if (mode === 'sort') sortIdle();
+    if (mode === 'mole') moleIdle();
+    if (mode === 'dino') dinoReset();
+    if (mode === 'typo') typoIdle();
   }
+
+  /* ---------- 반응속도, 스톱워치 ---------- */
   function rtPlay(){
     if (phase === 'idle' || phase === 'done'){
       phase = 'wait';
@@ -638,8 +747,9 @@ h2{font-size:17px;margin:0 0 12px}
       var diff = Math.round(Math.abs(elapsed - 10000));
       swPhase = 'done';
       big.textContent = (elapsed / 1000).toFixed(3) + ' 초';
-      hint.textContent = (elapsed > 10000 ? '+' : '-') + diff + ' ms 차이 · 다시 하려면 누르세요';
-      saveResult('stop', diff, Math.round(elapsed), $('#saved'), (elapsed > 10000 ? '+' : '-') + diff + ' ms 차이');
+      var sign = elapsed > 10000 ? '+' : '-';
+      hint.textContent = sign + diff + ' ms 차이 · 다시 하려면 누르세요';
+      saveResult('stop', diff, Math.round(elapsed), $('#saved'), sign + diff + ' ms 차이');
     }
   }
   play.addEventListener('click', function(){
@@ -650,7 +760,6 @@ h2{font-size:17px;margin:0 0 12px}
   });
 
   /* ---------- 분류 게임 ---------- */
-  // n번째 블록에 나올 수 있는 색 (L: 왼쪽, R: 오른쪽)
   function sortPool(n){
     var p = [{ c:'red', s:'L' }, { c:'blue', s:'R' }];
     if (n >= 26) p.push({ c:'yellow', s:'L' }, { c:'green', s:'R' });
@@ -685,11 +794,6 @@ h2{font-size:17px;margin:0 0 12px}
     $('#s-left').disabled = !S.running;
     $('#s-right').disabled = !S.running;
   }
-  function sortNote(text, cls){
-    var m = $('#s-msg');
-    m.className = cls || 'saved ok';
-    m.textContent = text;
-  }
   function sortIdle(){
     clearInterval(S.timer);
     S = { running:false, correct:0, left:60000, last:0, timer:0, piece:null };
@@ -715,19 +819,14 @@ h2{font-size:17px;margin:0 0 12px}
     var now = performance.now();
     S.left -= now - S.last;
     S.last = now;
-    if (S.left <= 0){
-      S.left = 0;
-      sortEnd('time');
-      return;
-    }
+    if (S.left <= 0){ S.left = 0; sortEnd('time'); return; }
     sortRender();
   }
-  // 정답 개수에 따라 시간 보너스
   function sortMilestones(){
     var c = S.correct;
-    if (c === 50){ S.left += 20000; sortNote('2단계 시작! +20초'); }
-    else if (c === 100){ S.left += 40000; sortNote('3단계 시작! +40초'); }
-    else if (c >= 200 && c % 100 === 0){ S.left += 50000; sortNote('+50초 보너스!'); }
+    if (c === 50){ S.left += 20000; noteEl($('#s-msg'), '2단계 시작! +20초'); }
+    else if (c === 100){ S.left += 40000; noteEl($('#s-msg'), '3단계 시작! +40초'); }
+    else if (c >= 200 && c % 100 === 0){ S.left += 50000; noteEl($('#s-msg'), '+50초 보너스!'); }
   }
   function sortChoose(side){
     if (!S.running) return;
@@ -745,25 +844,296 @@ h2{font-size:17px;margin:0 0 12px}
     S.running = false;
     clearInterval(S.timer);
     var c = S.correct, st = stageOf(c);
+    S.piece = null;
     sortRender();
     $('#s-start').disabled = false;
     $('#s-start').textContent = '다시 시작';
     var head = reason === 'wrong' ? '틀렸어요!' : (reason === 'time' ? '시간 종료!' : '게임을 나갔어요.');
-    var prefix = head + ' 정답 ' + c + '개 · ' + st + '단계';
     if (c > 0 || reason !== 'quit'){
-      saveResult('sort', c, null, $('#s-msg'), prefix);
+      saveResult('sort', c, null, $('#s-msg'), head + ' 정답 ' + c + '개 · ' + st + '단계');
     }
-    S.piece = null;
-    sortRender();
   }
   $('#s-start').addEventListener('click', sortStart);
   $('#s-left').addEventListener('click', function(){ sortChoose('L'); });
   $('#s-right').addEventListener('click', function(){ sortChoose('R'); });
-  document.addEventListener('keydown', function(e){
-    if (mode !== 'sort' || panel !== 'home' || !S.running) return;
-    if (e.key === 'ArrowLeft'){ e.preventDefault(); sortChoose('L'); }
-    else if (e.key === 'ArrowRight'){ e.preventDefault(); sortChoose('R'); }
+
+  /* ---------- 두더지 ---------- */
+  var moleEls = [];
+  var MOLE_ICON = { n:'🐹', g:'🌟', b:'💣' };
+  (function buildMoleGrid(){
+    var grid = $('#m-grid');
+    for (var i = 0; i < 9; i++){
+      (function(idx){
+        var b = document.createElement('button');
+        b.className = 'hole';
+        b.setAttribute('aria-label', (idx + 1) + '번 구멍');
+        b.addEventListener('click', function(){ moleHit(idx); });
+        grid.appendChild(b);
+        moleEls.push(b);
+      })(i);
+    }
+  })();
+
+  function moleRender(){
+    $('#m-score').textContent = MO.score;
+    $('#m-time').textContent = (MO.left / 1000).toFixed(1) + '초';
+    for (var i = 0; i < 9; i++){
+      var h = MO.holes[i];
+      var el = moleEls[i];
+      el.textContent = h ? MOLE_ICON[h.type] : '';
+      el.className = 'hole' + (h && h.type === 'g' ? ' gold' : (h && h.type === 'b' ? ' bomb' : ''));
+    }
+  }
+  function moleIdle(){
+    clearInterval(MO.timer);
+    MO = { running:false, score:0, left:30000, last:0, timer:0, holes:[null,null,null,null,null,null,null,null,null], spawnAt:0 };
+    $('#m-start').disabled = false;
+    $('#m-start').textContent = '시작';
+    $('#m-msg').textContent = '';
+    moleRender();
+  }
+  function moleStart(){
+    if (MO.running) return;
+    clearInterval(MO.timer);
+    MO = { running:true, score:0, left:30000, last:performance.now(), timer:0, holes:[null,null,null,null,null,null,null,null,null], spawnAt:0 };
+    MO.timer = setInterval(moleTick, 100);
+    $('#m-start').disabled = true;
+    $('#m-msg').textContent = '';
+    moleRender();
+  }
+  function moleTick(){
+    if (!MO.running) return;
+    var now = performance.now();
+    MO.left -= now - MO.last;
+    MO.last = now;
+    if (MO.left <= 0){ MO.left = 0; moleEnd('time'); return; }
+    for (var i = 0; i < 9; i++){
+      if (MO.holes[i] && now > MO.holes[i].until) MO.holes[i] = null;
+    }
+    if (now >= MO.spawnAt){
+      var empty = [];
+      for (var j = 0; j < 9; j++){ if (!MO.holes[j]) empty.push(j); }
+      if (empty.length){
+        var pick = empty[Math.floor(Math.random() * empty.length)];
+        var r = Math.random();
+        var type = r < 0.65 ? 'n' : (r < 0.8 ? 'g' : 'b');
+        MO.holes[pick] = { type: type, until: now + 900 + Math.random() * 700 };
+      }
+      MO.spawnAt = now + 500 + Math.random() * 400;
+    }
+    moleRender();
+  }
+  function moleHit(i){
+    if (!MO.running || !MO.holes[i]) return;
+    var t = MO.holes[i].type;
+    var pts = t === 'n' ? 1 : (t === 'g' ? 2 : -3);
+    MO.score += pts;
+    MO.holes[i] = null;
+    noteEl($('#m-msg'), (pts > 0 ? '+' + pts : String(pts)) + '점', pts > 0 ? 'saved ok' : 'saved bad');
+    moleRender();
+  }
+  function moleEnd(reason){
+    if (!MO.running) return;
+    MO.running = false;
+    clearInterval(MO.timer);
+    MO.holes = [null,null,null,null,null,null,null,null,null];
+    moleRender();
+    $('#m-start').disabled = false;
+    $('#m-start').textContent = '다시 시작';
+    var head = reason === 'time' ? '시간 종료!' : '게임을 나갔어요.';
+    if (MO.score !== 0 || reason !== 'quit'){
+      saveResult('mole', MO.score, null, $('#m-msg'), head + ' ' + MO.score + '점');
+    }
+  }
+  $('#m-start').addEventListener('click', moleStart);
+
+  /* ---------- 공룡 달리기 ---------- */
+  var cv = $('#d-canvas'), cx = cv.getContext('2d');
+
+  function dinoColor(){
+    try { return getComputedStyle(document.body).color; } catch(e){ return '#1d1d21'; }
+  }
+  function dinoDraw(){
+    cx.clearRect(0, 0, CW, CH);
+    cx.strokeStyle = '#9a9aa4';
+    cx.lineWidth = 2;
+    cx.beginPath(); cx.moveTo(0, GROUND + 2); cx.lineTo(CW, GROUND + 2); cx.stroke();
+    var h = (DN.duck && DN.onGround) ? 20 : 40;
+    cx.font = '34px sans-serif';
+    cx.textBaseline = 'bottom';
+    cx.fillText('🦖', DINO_X, DN.y + h + 4);
+    DN.obs.forEach(function(o){
+      cx.fillText(o.type === 'c' ? '🌵' : '🐦', o.x, o.y + o.h + 4);
+    });
+  }
+  function dinoReset(){
+    cancelAnimationFrame(DN.raf);
+    DN = { running:false, dist:0, y:GROUND - 40, vy:0, onGround:true, duck:false, obs:[], nextSpawn:300, last:0, raf:0 };
+    $('#d-start').disabled = false;
+    $('#d-start').textContent = '시작';
+    $('#d-score').textContent = '0 m';
+    $('#d-msg').textContent = '';
+    dinoDraw();
+  }
+  function dinoJump(){
+    if (!DN.running || !DN.onGround) return;
+    DN.vy = -11.5;
+    DN.onGround = false;
+  }
+  function dinoStart(){
+    if (DN.running) return;
+    dinoReset();
+    DN.running = true;
+    DN.last = performance.now();
+    $('#d-start').disabled = true;
+    DN.raf = requestAnimationFrame(dinoLoop);
+  }
+  function dinoLoop(t){
+    if (!DN.running) return;
+    var dt = Math.min(50, t - DN.last);
+    DN.last = t;
+    var f = dt / 16.67;
+    var speed = Math.min(14, 6 + DN.dist / 300);
+    var h = (DN.duck && DN.onGround) ? 20 : 40;
+
+    if (!DN.onGround){
+      DN.vy += 0.7 * f;
+      DN.y += DN.vy * f;
+      if (DN.y >= GROUND - 40){ DN.y = GROUND - 40; DN.vy = 0; DN.onGround = true; }
+    }
+    if (DN.onGround) DN.y = GROUND - h;
+
+    DN.dist += speed * f;
+    if (DN.dist >= DN.nextSpawn){
+      var r = Math.random();
+      if (r < 0.7){
+        DN.obs.push({ type:'c', x: CW + 10, y: GROUND - 34, w: 18, h: 34 });
+      } else {
+        DN.obs.push({ type:'b', x: CW + 10, y: GROUND - 44, w: 30, h: 20 });
+      }
+      DN.nextSpawn = DN.dist + 220 + Math.random() * 240 + speed * 8;
+    }
+    DN.obs.forEach(function(o){ o.x -= speed * f; });
+    DN.obs = DN.obs.filter(function(o){ return o.x + o.w > -10; });
+
+    var box = { x: DINO_X + 4, y: DN.y + 4, w: 24, h: h - 8 };
+    var hit = DN.obs.some(function(o){
+      return box.x < o.x + o.w && box.x + box.w > o.x && box.y < o.y + o.h && box.y + box.h > o.y;
+    });
+
+    $('#d-score').textContent = Math.floor(DN.dist / 10) + ' m';
+    dinoDraw();
+    if (hit){ dinoEnd('hit'); return; }
+    DN.raf = requestAnimationFrame(dinoLoop);
+  }
+  function dinoEnd(reason){
+    if (!DN.running) return;
+    DN.running = false;
+    cancelAnimationFrame(DN.raf);
+    var meters = Math.floor(DN.dist / 10);
+    dinoDraw();
+    $('#d-start').disabled = false;
+    $('#d-start').textContent = '다시 시작';
+    var head = reason === 'hit' ? '부딪혔어요!' : '게임을 나갔어요.';
+    if (meters > 0 || reason !== 'quit'){
+      saveResult('dino', meters, null, $('#d-msg'), head + ' ' + meters + ' m');
+    }
+  }
+  $('#d-start').addEventListener('click', dinoStart);
+  $('#d-jump').addEventListener('click', function(){
+    if (!DN.running) dinoStart(); else dinoJump();
   });
+  $('#d-duck').addEventListener('pointerdown', function(){ DN.duck = true; });
+  ['pointerup','pointerleave','pointercancel'].forEach(function(ev){
+    $('#d-duck').addEventListener(ev, function(){ DN.duck = false; });
+  });
+  cv.addEventListener('pointerdown', function(){ dinoJump(); });
+  document.addEventListener('keydown', function(e){
+    if (mode !== 'dino' || panel !== 'home') return;
+    if (e.key === 'ArrowUp' || e.key === ' '){ e.preventDefault(); if (DN.running) dinoJump(); }
+    else if (e.key === 'ArrowDown'){ e.preventDefault(); DN.duck = true; }
+  });
+  document.addEventListener('keyup', function(e){
+    if (e.key === 'ArrowDown') DN.duck = false;
+  });
+
+  /* ---------- 숨은 오타 찾기 ---------- */
+  var typoCells = [];
+  (function buildTypoGrid(){
+    var grid = $('#t-grid');
+    for (var i = 0; i < 100; i++){
+      (function(idx){
+        var b = document.createElement('button');
+        b.className = 'cell';
+        b.disabled = true;
+        b.addEventListener('click', function(){ typoClick(idx); });
+        grid.appendChild(b);
+        typoCells.push(b);
+      })(i);
+    }
+  })();
+
+  function typoNewRound(){
+    var p = TYPO_PAIRS[Math.floor(Math.random() * TYPO_PAIRS.length)];
+    TY.answer = Math.floor(Math.random() * 100);
+    for (var i = 0; i < 100; i++){
+      typoCells[i].textContent = (i === TY.answer) ? p[1] : p[0];
+    }
+  }
+  function typoIdle(){
+    clearInterval(TY.timer);
+    TY = { running:false, score:0, left:60000, last:0, timer:0, answer:-1 };
+    typoCells.forEach(function(c){ c.textContent = ''; c.disabled = true; });
+    $('#t-score').textContent = '0';
+    $('#t-time').textContent = '60.0초';
+    $('#t-start').disabled = false;
+    $('#t-start').textContent = '시작';
+    $('#t-msg').textContent = '';
+  }
+  function typoStart(){
+    if (TY.running) return;
+    clearInterval(TY.timer);
+    TY = { running:true, score:0, left:60000, last:performance.now(), timer:0, answer:-1 };
+    typoNewRound();
+    typoCells.forEach(function(c){ c.disabled = false; });
+    TY.timer = setInterval(typoTick, 100);
+    $('#t-start').disabled = true;
+    $('#t-msg').textContent = '';
+    $('#t-score').textContent = '0';
+  }
+  function typoTick(){
+    if (!TY.running) return;
+    var now = performance.now();
+    TY.left -= now - TY.last;
+    TY.last = now;
+    if (TY.left <= 0){ TY.left = 0; typoEnd('time'); return; }
+    $('#t-time').textContent = (TY.left / 1000).toFixed(1) + '초';
+  }
+  function typoClick(i){
+    if (!TY.running) return;
+    if (i === TY.answer){
+      TY.score += 5;
+      noteEl($('#t-msg'), '+5점! 정답이에요', 'saved ok');
+      typoNewRound();
+    } else {
+      TY.score -= 2;
+      noteEl($('#t-msg'), '-2점! 오타가 아니에요', 'saved bad');
+    }
+    $('#t-score').textContent = TY.score;
+  }
+  function typoEnd(reason){
+    if (!TY.running) return;
+    TY.running = false;
+    clearInterval(TY.timer);
+    typoCells.forEach(function(c){ c.disabled = true; });
+    $('#t-start').disabled = false;
+    $('#t-start').textContent = '다시 시작';
+    var head = reason === 'time' ? '시간 종료!' : '게임을 나갔어요.';
+    if (TY.score !== 0 || reason !== 'quit'){
+      saveResult('typo', TY.score, null, $('#t-msg'), head + ' ' + TY.score + '점');
+    }
+  }
+  $('#t-start').addEventListener('click', typoStart);
 
   /* ---------- 전체 순위 ---------- */
   function loadBoard(){
@@ -771,7 +1141,7 @@ h2{font-size:17px;margin:0 0 12px}
     var q = db.from('scores').select('no,name,score,created_at').eq('mode', m);
     if (r.from !== null) q = q.gte('created_at', new Date(r.from).toISOString());
     if (r.to !== null) q = q.lt('created_at', new Date(r.to).toISOString());
-    q = q.order('score', { ascending: m !== 'sort' }).order('created_at', { ascending: true }).limit(10);
+    q = q.order('score', { ascending: !isHigh(m) }).order('created_at', { ascending: true }).limit(10);
     q.then(function(res){
       if (res.error) throw res.error;
       return attachTitles(res.data || []);
@@ -843,14 +1213,14 @@ h2{font-size:17px;margin:0 0 12px}
 
   function rankedOf(week, m){
     var list = league.entries.filter(function(r){ return r.week === week && r.mode === m; });
-    var played = list.filter(function(r){ return Number(r.best) < NONE; }).sort(bestSort(m));
-    return { played: played, total: list.length };
+    var played = list.filter(function(r){ return Number(r.best) < NONE; }).sort(sortBest(m));
+    return { played: played };
   }
 
   function renderLeague(){
     if (!league) return;
     var m = lgMode, cur = league.cur;
-    $('#lg-sport').textContent = m === 'react' ? '반응속도 리그' : (m === 'stop' ? '스톱워치 리그' : '분류게임 리그');
+    $('#lg-sport').textContent = GAMES[m].label + ' 리그';
     $('#lg-cur-range').textContent = weekRange(weekMonday(0)) + ' · 진행 중';
 
     var curRank = rankedOf(cur, m);
@@ -927,7 +1297,7 @@ h2{font-size:17px;margin:0 0 12px}
         var mine = [];
         Object.keys(groups).forEach(function(k){
           var m = k.split('|')[1];
-          var g = groups[k].slice().sort(bestSort(m));
+          var g = groups[k].slice().sort(sortBest(m));
           g.forEach(function(x, i){
             if (x.no === me.no) mine.push({ week: x.week, mode: x.mode, rank: i + 1 });
           });
@@ -946,12 +1316,14 @@ h2{font-size:17px;margin:0 0 12px}
         if (wins >= 10) ids.push('mvp');
 
         var runTop3 = {}, runWin = {};
-        ['react', 'stop', 'sort'].forEach(function(m){
+        MODES.forEach(function(m){
           runTop3[m] = longestRun(mine.filter(function(x){ return x.mode === m && x.rank <= 3; }).map(function(x){ return x.week; }).sort());
           runWin[m] = longestRun(mine.filter(function(x){ return x.mode === m && x.rank === 1; }).map(function(x){ return x.week; }).sort());
         });
-        if (runTop3.react >= 3 || runTop3.stop >= 3 || runTop3.sort >= 3) ids.push('elite');
-        if (runWin.react >= 3 || runWin.stop >= 3 || runWin.sort >= 3) ids.push('medal3');
+        var anyTop3 = MODES.some(function(m){ return runTop3[m] >= 3; });
+        var anyWin = MODES.some(function(m){ return runWin[m] >= 3; });
+        if (anyTop3) ids.push('elite');
+        if (anyWin) ids.push('medal3');
         if (runWin.react >= 3 && runWin.stop >= 3) ids.push('world');
 
         return grantIds(ids);
@@ -1007,12 +1379,10 @@ h2{font-size:17px;margin:0 0 12px}
   function equipTitle(id){
     db.rpc('set_title', { p_no: me.no, p_id: id }).then(function(r){
       if (r.error) throw r.error;
-      $('#title-msg').className = 'saved ok';
-      $('#title-msg').textContent = id ? '칭호를 장착했어요.' : '칭호를 해제했어요.';
+      noteEl($('#title-msg'), id ? '칭호를 장착했어요.' : '칭호를 해제했어요.');
       return refreshAll();
     }).catch(function(e){
-      $('#title-msg').className = 'saved bad';
-      $('#title-msg').textContent = '칭호를 바꾸지 못했어요: ' + errText(e);
+      noteEl($('#title-msg'), '칭호를 바꾸지 못했어요: ' + errText(e), 'saved bad');
     });
   }
 
@@ -1026,9 +1396,6 @@ h2{font-size:17px;margin:0 0 12px}
       .then(function(){ if (panel === 'league') return loadLeague(); })
       .catch(function(){});
   }
-
-  /* ---------- 키보드 ---------- */
-  // 분류 게임 키보드 조작은 위에서 등록했습니다.
 
   /* ---------- 시작 ---------- */
   setMode('react');
