@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#e4572e">
-<title>반응속도 · 스톱워치 게임</title>
+<title>반응속도 · 스톱워치 · 분류 게임</title>
 <style>
 :root{
   --bg:#f5f3ee; --card:#ffffff; --fg:#1d1d21; --muted:#6c6c75; --line:#e4e1da;
@@ -36,18 +36,19 @@ h2{font-size:17px;margin:0 0 12px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
 .tabs{display:flex;gap:8px;flex-wrap:wrap}
 .tab{
-  flex:1 1 140px; padding:10px 12px; border-radius:10px; border:1px solid var(--line);
+  flex:1 1 110px; padding:10px 12px; border-radius:10px; border:1px solid var(--line);
   background:transparent; color:var(--fg); font:inherit; font-weight:600; cursor:pointer;
 }
 .tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
-.tab:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tab:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .rule{margin:10px 0 0;color:var(--muted);font-size:13.5px}
 .field{display:flex;flex-direction:column;gap:6px;margin-top:14px;min-width:0}
 .field label{font-size:13.5px;color:var(--muted);font-weight:600}
-.field input{
-  padding:12px; border-radius:10px; border:1px solid var(--line);
-  background:var(--bg); color:var(--fg); font:inherit; min-width:0; width:100%;
+.field input,select{
+  padding:10px; border-radius:10px; border:1px solid var(--line);
+  background:var(--bg); color:var(--fg); font:inherit; min-width:0;
 }
+.field input{width:100%}
 .name-show{padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);min-height:46px;font-weight:600;color:var(--muted)}
 .name-show.on{color:var(--fg)}
 .btn{
@@ -56,12 +57,11 @@ h2{font-size:17px;margin:0 0 12px}
 }
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
 .btn:disabled{opacity:.45;cursor:default}
-.btn.danger{color:var(--stop)}
 .err{color:var(--stop);font-size:13.5px;min-height:20px;margin:8px 0 0}
 .who-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .who-bar .me{font-weight:700}
 .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center;justify-content:flex-end}
-.lg-head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.head-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .lg-mine{font-weight:700;margin:12px 0 0}
 
 .bottom-nav{
@@ -92,6 +92,21 @@ h2{font-size:17px;margin:0 0 12px}
 .saved.ok{color:var(--ok)}
 .saved.bad{color:var(--stop)}
 
+/* 분류 게임 */
+.s-status{display:flex;justify-content:space-between;font-weight:700;margin-top:14px;flex-wrap:wrap;gap:6px;font-variant-numeric:tabular-nums}
+.s-bins{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.bin{border:1px dashed var(--line);border-radius:12px;padding:10px 6px;text-align:center;min-width:0}
+.bin .bl{font-size:12.5px;color:var(--muted);font-weight:700}
+.chips{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:6px;min-height:28px}
+.chip{width:26px;height:26px;border-radius:50%;border:2px solid var(--line)}
+.s-area{min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin-top:10px;gap:8px}
+.piece{width:120px;height:120px;border-radius:50%;border:4px solid var(--line);box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.s-hint{color:var(--muted);font-size:14px;text-align:center}
+.s-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.sbtn{padding:18px 8px;border-radius:14px;border:1px solid var(--line);background:var(--card);font:inherit;font-size:17px;font-weight:700;color:var(--fg);cursor:pointer}
+.sbtn:disabled{opacity:.4;cursor:default}
+
+/* 순위 */
 .podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end;margin-top:16px;margin-bottom:16px}
 .step{
   border-radius:12px 12px 4px 4px; padding:12px 8px; text-align:center; min-width:0;
@@ -129,8 +144,8 @@ h2{font-size:17px;margin:0 0 12px}
 <div class="wrap">
 
   <header>
-    <h1>반응속도 · 스톱워치 게임</h1>
-    <p class="sub">내 번호를 입력하고 들어가서 우리 반 최고 기록에 도전해 보세요.</p>
+    <h1>반응속도 · 스톱워치 · 분류 게임</h1>
+    <p class="sub">번호를 입력하고 들어가서 우리 반 최고 기록에 도전해 보세요.</p>
   </header>
 
   <!-- 번호 입력 -->
@@ -149,7 +164,6 @@ h2{font-size:17px;margin:0 0 12px}
     </form>
   </section>
 
-  <!-- main -->
   <div id="main" hidden style="display:flex;flex-direction:column;gap:20px">
 
     <section class="card" aria-label="내 정보">
@@ -159,37 +173,74 @@ h2{font-size:17px;margin:0 0 12px}
       </div>
     </section>
 
-    <section class="card" aria-label="칭호">
-      <h2>칭호</h2>
-      <p class="rule" id="title-now"></p>
-      <div id="title-list" style="margin-top:12px;display:flex;flex-direction:column;gap:6px"></div>
-      <div class="row"><button class="btn" id="title-off">칭호 해제</button></div>
-      <p class="saved" id="title-msg"></p>
-    </section>
-
     <!-- HOME -->
     <div id="panel-home" style="display:flex;flex-direction:column;gap:20px">
-      <div id="home-slot">
-        <section class="card" id="play-card" aria-label="게임">
-          <div class="tabs" role="tablist" style="margin-top:0">
-            <button class="tab" role="tab" aria-selected="true" data-mode="react">반응속도</button>
-            <button class="tab" role="tab" aria-selected="false" data-mode="stop">스톱워치 맞추기</button>
-          </div>
-          <p class="rule" id="rule"></p>
+
+      <section class="card" aria-label="칭호">
+        <h2>칭호</h2>
+        <p class="rule" id="title-now"></p>
+        <div id="title-list" style="margin-top:12px;display:flex;flex-direction:column;gap:6px"></div>
+        <div class="row"><button class="btn" id="title-off">칭호 해제</button></div>
+        <p class="saved" id="title-msg"></p>
+      </section>
+
+      <section class="card" aria-label="게임">
+        <div class="tabs" role="tablist" style="margin-top:0">
+          <button class="tab" role="tab" aria-selected="true" data-mode="react">반응속도</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="stop">스톱워치</button>
+          <button class="tab" role="tab" aria-selected="false" data-mode="sort">분류게임</button>
+        </div>
+        <p class="rule" id="rule"></p>
+
+        <!-- 반응속도, 스톱워치 -->
+        <div id="play-area">
           <div class="play" id="play" role="button" tabindex="0" aria-live="polite">
             <div class="big" id="big">준비</div>
             <div class="hint" id="hint">눌러서 시작</div>
           </div>
-          <div class="row"><button class="btn primary" id="save" disabled>기록 저장</button></div>
           <p class="saved" id="saved"></p>
-        </section>
-      </div>
+        </div>
+
+        <!-- 분류게임 -->
+        <div id="sort-area" hidden>
+          <div class="s-status">
+            <span id="s-stage">1단계</span>
+            <span id="s-count">정답 0개</span>
+            <span id="s-time">60.0초</span>
+          </div>
+          <div class="s-bins">
+            <div class="bin"><div class="bl">← 왼쪽 화살표</div><div class="chips" id="s-binL"></div></div>
+            <div class="bin"><div class="bl">오른쪽 화살표 →</div><div class="chips" id="s-binR"></div></div>
+          </div>
+          <div class="s-area">
+            <div class="piece" id="s-piece" hidden></div>
+            <div class="s-hint" id="s-hint">시작을 누르고 블록을 맞는 쪽으로 보내세요</div>
+          </div>
+          <div class="s-btns">
+            <button class="sbtn" id="s-left" disabled>← 왼쪽</button>
+            <button class="sbtn" id="s-right" disabled>오른쪽 →</button>
+          </div>
+          <div class="row"><button class="btn primary" id="s-start">시작</button></div>
+          <p class="saved" id="s-msg"></p>
+        </div>
+      </section>
 
       <section class="card" aria-label="전체 순위">
-        <h2>전체 순위</h2>
-        <div class="tabs" role="tablist">
+        <div class="head-row">
+          <h2 style="margin:0">전체 순위</h2>
+          <select id="period" aria-label="기간 선택">
+            <option value="today">오늘</option>
+            <option value="yesterday">어제</option>
+            <option value="3d">최근 3일</option>
+            <option value="1w">최근 1주</option>
+            <option value="1m">최근 1달</option>
+            <option value="all" selected>전체</option>
+          </select>
+        </div>
+        <div class="tabs" role="tablist" style="margin-top:12px">
           <button class="tab" role="tab" aria-selected="true" data-lb="react">반응속도</button>
           <button class="tab" role="tab" aria-selected="false" data-lb="stop">스톱워치</button>
+          <button class="tab" role="tab" aria-selected="false" data-lb="sort">분류게임</button>
         </div>
         <div class="podium" id="podium"></div>
         <p class="empty" id="empty" hidden></p>
@@ -199,28 +250,18 @@ h2{font-size:17px;margin:0 0 12px}
 
     <!-- LEAGUE -->
     <div id="panel-league" hidden style="display:flex;flex-direction:column;gap:20px">
-      <div id="league-slot"></div>
-
-      <section class="card" aria-label="이번 주 리그">
-        <div class="lg-head">
-          <h2 id="lg-sport">리그</h2>
+      <section class="card" aria-label="리그">
+        <div class="tabs" role="tablist" style="margin-top:0">
+          <button class="tab" role="tab" aria-selected="true" data-lgm="react">반응속도</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="stop">스톱워치</button>
+          <button class="tab" role="tab" aria-selected="false" data-lgm="sort">분류게임</button>
+        </div>
+        <div class="head-row" style="margin-top:14px">
+          <h2 id="lg-sport" style="margin:0">리그</h2>
           <span class="rule" style="margin:0" id="lg-cur-range"></span>
         </div>
         <p class="lg-mine" id="lg-mine"></p>
-        <p class="rule">리그 기록은 이번 주 가장 좋은 기록으로 순위를 매깁니다. 주간 리그는 매주 월요일에 시작해 일요일에 끝나요.</p>
-      </section>
-
-      <section class="card" aria-label="다음 주 리그 신청">
-        <h2>다음 주 리그 신청</h2>
-        <p class="rule" id="lg-next-range"></p>
-        <div class="lg-head" style="margin-top:12px">
-          <span class="rule" style="margin:0" id="lg-next-count"></span>
-          <span style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn primary" id="lg-signup">다음 주 리그 신청</button>
-            <button class="btn danger" id="lg-cancel" hidden>신청 취소</button>
-          </span>
-        </div>
-        <p class="saved" id="lg-msg"></p>
+        <p class="rule">홈에서 게임을 하면 이번 주 리그에 자동으로 등록돼요. 최고 기록으로 순위를 매기고, 주간 리그는 매주 월요일에 시작해 일요일에 끝나요.</p>
       </section>
 
       <section class="card" aria-label="이번 주 순위">
@@ -301,25 +342,42 @@ h2{font-size:17px;margin:0 0 12px}
   TITLES.forEach(function(t){ BY_ID[t.id] = t; });
   function labelOf(id){ return id && BY_ID[id] ? BY_ID[id].label : null; }
 
-  var me = null, panel = 'home', mode = 'react', lbMode = 'react';
-  var league = null;
-  var pending = null, phase = 'idle', swPhase = 'idle', swStart = 0, rtTimer = 0, rtGoAt = 0;
+  // 분류 게임 색깔과 맞는 쪽 (L: 왼쪽 화살표, R: 오른쪽 화살표)
+  var COLOR = {
+    red:'#e53935', blue:'#1e88e5', yellow:'#fdd835', green:'#43a047',
+    orange:'#fb8c00', purple:'#8e24aa', black:'#212121', white:'#fafafa'
+  };
 
+  var me = null, panel = 'home', mode = 'react', lbMode = 'react', lbPeriod = 'all', lgMode = 'react';
+  var league = null;
+  var rtTimer = 0, phase = 'idle', swPhase = 'idle', swStart = 0, rtGoAt = 0;
   var play = $('#play'), big = $('#big'), hint = $('#hint');
-  var saveBtn = $('#save'), savedMsg = $('#saved');
+
+  // 분류 게임 상태
+  var S = { running:false, correct:0, left:60000, last:0, timer:0, piece:null };
 
   /* ---------- helpers ---------- */
   function coded(code){ var e = new Error(code); e.code = code; return e; }
-  function codeOf(e){
-    var m = String((e && (e.message || e.code)) || '');
-    var keys = ['login_required','not_signed','bad_score','bad_mode','bad_no','not_earned'];
-    for (var i = 0; i < keys.length; i++){ if (m.indexOf(keys[i]) >= 0) return keys[i]; }
-    return 'error';
-  }
+  function errText(e){ return (e && (e.message || e.code)) || '알 수 없는 오류'; }
   function honor(p){ return p.no === 0 ? p.name : p.name + ' 님'; }
   function honorRow(r){ return (r.title ? r.title + ' ' : '') + (r.no === 0 ? r.name : r.name + ' 님'); }
   function dispName(r){ return (r.title ? r.title + ' ' : '') + r.name; }
-  function fmt(m, v){ return m === 'react' ? v + ' ms' : '차이 ' + v + ' ms'; }
+  function fmt(m, v){
+    if (m === 'react') return v + ' ms';
+    if (m === 'stop') return '차이 ' + v + ' ms';
+    return v + ' 개';
+  }
+  // 분류 게임은 정답이 많을수록 좋고, 나머지는 작을수록 좋아요
+  function isBetter(m, a, b){ return m === 'sort' ? a > b : a < b; }
+  function scoreSort(m){ return function(a, b){
+    var d = m === 'sort' ? (Number(b.score) - Number(a.score)) : (Number(a.score) - Number(b.score));
+    return d || (new Date(a.created_at) - new Date(b.created_at));
+  }; }
+  function bestSort(m){ return function(a, b){
+    var d = m === 'sort' ? (Number(b.best) - Number(a.best)) : (Number(a.best) - Number(b.best));
+    return d || (Number(a.at) - Number(b.at));
+  }; }
+
   function weekMonday(offset){
     var d = new Date(Date.now() + 9 * 3600000);
     var dow = (d.getUTCDay() + 6) % 7;
@@ -330,12 +388,34 @@ h2{font-size:17px;margin:0 0 12px}
   function fmtDay(ts){ var d = new Date(ts); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
   function weekRange(mon){ return fmtDay(mon) + ' ~ ' + fmtDay(mon + 6 * DAY); }
 
-  // 번호를 이 기기에 기억 (실패해도 괜찮음)
-  function getSavedNo(){
-    try { var v = localStorage.getItem('myNo'); return v === null ? null : parseInt(v, 10); } catch(e){ return null; }
+  // 기간 선택: 한국 시간 기준
+  function rangeOf(k){
+    var now = Date.now();
+    var todayStart = Math.floor((now + 9 * 3600000) / DAY) * DAY - 9 * 3600000;
+    var r = { from: null, to: null };
+    if (k === 'today') r.from = todayStart;
+    else if (k === 'yesterday'){ r.from = todayStart - DAY; r.to = todayStart; }
+    else if (k === '3d') r.from = now - 3 * DAY;
+    else if (k === '1w') r.from = now - 7 * DAY;
+    else if (k === '1m') r.from = now - 30 * DAY;
+    return r;
   }
-  function setSavedNo(n){
-    try { if (n === null) localStorage.removeItem('myNo'); else localStorage.setItem('myNo', String(n)); } catch(e){}
+
+  // 게임 기록 한 번 저장 (자동)
+  function saveResult(m, score, elapsed, msgEl, prefix){
+    msgEl.className = 'saved'; msgEl.textContent = '저장하는 중...';
+    return db.rpc('save_result', { p_no: me.no, p_mode: m, p_score: score, p_elapsed: elapsed })
+      .then(function(r){
+        if (r.error) throw r.error;
+        return grantIds(recordTitles(m, score, elapsed));
+      }).then(function(){
+        msgEl.className = 'saved ok';
+        msgEl.textContent = (prefix ? prefix + ' · ' : '') + '자동 저장됐어요 ✓';
+        return refreshAll();
+      }).catch(function(e){
+        msgEl.className = 'saved bad';
+        msgEl.textContent = '저장하지 못했어요: ' + errText(e);
+      });
   }
 
   function recordTitles(m, score, elapsed){
@@ -351,7 +431,7 @@ h2{font-size:17px;margin:0 0 12px}
     return db.rpc('grant_titles', { p_no: me.no, p_ids: ids }).then(function(r){ if (r.error) throw r.error; });
   }
 
-  // 목록의 각 사람에게 장착 칭호를 붙이기
+  // 목록의 각 사람에게 장착 칭호 붙이기
   function attachTitles(rows){
     var nos = [];
     rows.forEach(function(r){ if (nos.indexOf(r.no) < 0) nos.push(r.no); });
@@ -365,7 +445,15 @@ h2{font-size:17px;margin:0 0 12px}
     });
   }
 
-  /* ---------- 번호 입력 화면 ---------- */
+  // 이 기기에 번호 기억
+  function getSavedNo(){
+    try { var v = localStorage.getItem('myNo'); return v === null ? null : parseInt(v, 10); } catch(e){ return null; }
+  }
+  function setSavedNo(n){
+    try { if (n === null) localStorage.removeItem('myNo'); else localStorage.setItem('myNo', String(n)); } catch(e){}
+  }
+
+  /* ---------- 번호 입력 ---------- */
   function lookupNo(){
     var v = $('#n-no').value.trim();
     var n = parseInt(v, 10);
@@ -392,18 +480,18 @@ h2{font-size:17px;margin:0 0 12px}
       showMain();
     }).catch(function(er){
       me = null;
-      err.textContent = '들어가지 못했어요: ' + (er && (er.message || er.code) || '알 수 없는 오류');
+      err.textContent = '들어가지 못했어요: ' + errText(er);
     }).then(function(){ btn.disabled = false; });
   });
 
   $('#change-no').addEventListener('click', function(){
     setSavedNo(null);
     me = null;
+    if (S.running) sortEnd('quit');
     resetGame();
     showEntry();
   });
 
-  // 내 장착 칭호 가져오기
   function loadEquipped(){
     return db.from('players').select('no,equipped').eq('no', me.no).single().then(function(r){
       if (r.error) throw r.error;
@@ -431,38 +519,44 @@ h2{font-size:17px;margin:0 0 12px}
     refreshAll();
   }
 
-  /* ---------- bottom tabs ---------- */
+  /* ---------- 아래 탭 ---------- */
   function showPanel(p){
+    if (S.running) sortEnd('quit');
     panel = p;
     $('#panel-home').hidden = p !== 'home';
     $('#panel-league').hidden = p !== 'league';
-    (p === 'home' ? $('#home-slot') : $('#league-slot')).appendChild($('#play-card'));
     document.querySelectorAll('[data-panel]').forEach(function(b){
       b.setAttribute('aria-selected', String(b.dataset.panel === p));
     });
-    resetGame();
-    if (p === 'league') loadLeague(); else loadBoard();
+    if (p === 'home'){ resetGame(); loadBoard(); }
+    else { loadLeague(); }
   }
   document.querySelectorAll('[data-panel]').forEach(function(b){
     b.addEventListener('click', function(){ showPanel(b.dataset.panel); });
   });
 
-  /* ---------- sport switching ---------- */
+  /* ---------- 게임 고르기 ---------- */
+  var RULE = {
+    react: '초록색으로 바뀌면 최대한 빨리 누르세요. 너무 빨리 누르면 실격입니다. 점수는 짧을수록 좋아요. 기록은 자동으로 저장돼요.',
+    stop: '시작을 누르고 10초라고 생각되는 순간 멈추세요. 숫자는 멈출 때까지 보이지 않아요. 10.000초에 가까울수록 좋아요. 기록은 자동으로 저장돼요.',
+    sort: '블록 색에 맞는 화살표를 누르세요. 왼쪽 색은 ← 왼쪽, 오른쪽 색은 오른쪽 → 으로 보내요. 한 번이라도 틀리면 끝나요. 처음에는 60초가 주어져요. 끝나면 정답 개수가 자동으로 저장돼요.'
+  };
   function setMode(m){
+    if (S.running) sortEnd('quit');
     mode = m;
     document.querySelectorAll('[data-mode]').forEach(function(t){
       t.setAttribute('aria-selected', String(t.dataset.mode === m));
     });
-    $('#rule').textContent = m === 'react'
-      ? '초록색으로 바뀌면 최대한 빨리 누르세요. 너무 빨리 누르면 실격입니다. 점수는 짧을수록 좋아요.'
-      : '시작을 누르고 10초라고 생각되는 순간 멈추세요. 숫자는 멈출 때까지 보이지 않아요. 10.000초에 가까울수록 좋아요.';
-    saveBtn.textContent = panel === 'league' ? '리그에 반영' : '기록 저장';
+    $('#rule').textContent = RULE[m];
+    $('#play-area').hidden = m === 'sort';
+    $('#sort-area').hidden = m !== 'sort';
     resetGame();
-    if (panel === 'league') renderLeague();
   }
   document.querySelectorAll('[data-mode]').forEach(function(t){
     t.addEventListener('click', function(){ setMode(t.dataset.mode); });
   });
+
+  /* ---------- 순위 탭 ---------- */
   document.querySelectorAll('[data-lb]').forEach(function(t){
     t.addEventListener('click', function(){
       lbMode = t.dataset.lb;
@@ -472,20 +566,34 @@ h2{font-size:17px;margin:0 0 12px}
       loadBoard();
     });
   });
+  $('#period').addEventListener('change', function(){
+    lbPeriod = this.value;
+    loadBoard();
+  });
+  document.querySelectorAll('[data-lgm]').forEach(function(t){
+    t.addEventListener('click', function(){
+      lgMode = t.dataset.lgm;
+      document.querySelectorAll('[data-lgm]').forEach(function(x){
+        x.setAttribute('aria-selected', String(x.dataset.lgm === lgMode));
+      });
+      renderLeague();
+    });
+  });
 
-  /* ---------- game engine ---------- */
+  /* ---------- 반응속도, 스톱워치 ---------- */
   function resetGame(){
     clearTimeout(rtTimer);
-    pending = null; phase = 'idle'; swPhase = 'idle';
+    phase = 'idle'; swPhase = 'idle';
     play.className = 'play';
-    saveBtn.disabled = true; savedMsg.textContent = ''; savedMsg.className = 'saved';
+    $('#saved').textContent = ''; $('#saved').className = 'saved';
     big.style.opacity = '1';
     if (mode === 'react'){
       big.textContent = '준비'; hint.textContent = '눌러서 시작';
-    } else {
+    } else if (mode === 'stop'){
       big.textContent = '10.000'; hint.textContent = '눌러서 시작';
       big.style.opacity = '.35';
     }
+    if (mode === 'sort') sortIdle();
   }
   function rtPlay(){
     if (phase === 'idle' || phase === 'done'){
@@ -493,7 +601,7 @@ h2{font-size:17px;margin:0 0 12px}
       play.className = 'play wait';
       big.textContent = '기다리세요';
       hint.textContent = '초록색이 되면 누르세요';
-      saveBtn.disabled = true; savedMsg.textContent = '';
+      $('#saved').textContent = '';
       rtTimer = setTimeout(function(){
         phase = 'go';
         rtGoAt = performance.now();
@@ -513,8 +621,7 @@ h2{font-size:17px;margin:0 0 12px}
       play.className = 'play';
       big.textContent = ms + ' ms';
       hint.textContent = '다시 하려면 누르세요';
-      pending = { score: ms };
-      saveBtn.disabled = false;
+      saveResult('react', ms, null, $('#saved'), ms + ' ms');
     }
   }
   function swPlay(){
@@ -525,95 +632,162 @@ h2{font-size:17px;margin:0 0 12px}
       big.style.opacity = '1';
       big.textContent = '??.???';
       hint.textContent = '10초라고 생각되면 누르세요';
-      saveBtn.disabled = true; savedMsg.textContent = '';
+      $('#saved').textContent = '';
     } else if (swPhase === 'running'){
       var elapsed = performance.now() - swStart;
       var diff = Math.round(Math.abs(elapsed - 10000));
       swPhase = 'done';
       big.textContent = (elapsed / 1000).toFixed(3) + ' 초';
       hint.textContent = (elapsed > 10000 ? '+' : '-') + diff + ' ms 차이 · 다시 하려면 누르세요';
-      pending = { score: diff, elapsed: Math.round(elapsed) };
-      saveBtn.disabled = false;
+      saveResult('stop', diff, Math.round(elapsed), $('#saved'), (elapsed > 10000 ? '+' : '-') + diff + ' ms 차이');
     }
   }
-  function onPlay(){ if (mode === 'react') rtPlay(); else swPlay(); }
-  play.addEventListener('click', onPlay);
+  play.addEventListener('click', function(){
+    if (mode === 'react') rtPlay(); else if (mode === 'stop') swPlay();
+  });
   play.addEventListener('keydown', function(e){
-    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); onPlay(); }
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); play.click(); }
   });
 
-  /* ---------- saving ---------- */
-  saveBtn.addEventListener('click', function(){
-    if (!pending || !me) return;
-    if (panel === 'league') saveLeague(); else saveHome();
+  /* ---------- 분류 게임 ---------- */
+  // n번째 블록에 나올 수 있는 색 (L: 왼쪽, R: 오른쪽)
+  function sortPool(n){
+    var p = [{ c:'red', s:'L' }, { c:'blue', s:'R' }];
+    if (n >= 26) p.push({ c:'yellow', s:'L' }, { c:'green', s:'R' });
+    if (n >= 51) p.push({ c:'orange', s:'L' }, { c:'purple', s:'R' });
+    if (n >= 101) p.push({ c:'black', s:'L' }, { c:'white', s:'R' });
+    return p;
+  }
+  function stageOf(c){ return c >= 100 ? 3 : (c >= 50 ? 2 : 1); }
+  function pickPiece(){
+    var pool = sortPool(S.correct + 1);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function chipsHTML(list){
+    return list.map(function(p){
+      return '<span class="chip" style="background:' + COLOR[p.c] + '"></span>';
+    }).join('');
+  }
+  function sortRender(){
+    var pool = sortPool(S.correct + 1);
+    $('#s-stage').textContent = stageOf(S.correct) + '단계';
+    $('#s-count').textContent = '정답 ' + S.correct + '개';
+    $('#s-time').textContent = (S.left / 1000).toFixed(1) + '초';
+    $('#s-binL').innerHTML = chipsHTML(pool.filter(function(p){ return p.s === 'L'; }));
+    $('#s-binR').innerHTML = chipsHTML(pool.filter(function(p){ return p.s === 'R'; }));
+    var pc = $('#s-piece');
+    if (S.piece){
+      pc.hidden = false;
+      pc.style.background = COLOR[S.piece.c];
+    } else {
+      pc.hidden = true;
+    }
+    $('#s-left').disabled = !S.running;
+    $('#s-right').disabled = !S.running;
+  }
+  function sortNote(text, cls){
+    var m = $('#s-msg');
+    m.className = cls || 'saved ok';
+    m.textContent = text;
+  }
+  function sortIdle(){
+    clearInterval(S.timer);
+    S = { running:false, correct:0, left:60000, last:0, timer:0, piece:null };
+    $('#s-start').disabled = false;
+    $('#s-start').textContent = '시작';
+    $('#s-hint').textContent = '시작을 누르고 블록을 맞는 쪽으로 보내세요';
+    $('#s-msg').textContent = '';
+    sortRender();
+  }
+  function sortStart(){
+    if (S.running) return;
+    clearInterval(S.timer);
+    S = { running:true, correct:0, left:60000, last:performance.now(), timer:0, piece:null };
+    S.piece = pickPiece();
+    S.timer = setInterval(sortTick, 100);
+    $('#s-start').disabled = true;
+    $('#s-hint').textContent = '왼쪽 색은 ← 왼쪽, 오른쪽 색은 오른쪽 → 을 누르세요';
+    $('#s-msg').textContent = '';
+    sortRender();
+  }
+  function sortTick(){
+    if (!S.running) return;
+    var now = performance.now();
+    S.left -= now - S.last;
+    S.last = now;
+    if (S.left <= 0){
+      S.left = 0;
+      sortEnd('time');
+      return;
+    }
+    sortRender();
+  }
+  // 정답 개수에 따라 시간 보너스
+  function sortMilestones(){
+    var c = S.correct;
+    if (c === 50){ S.left += 20000; sortNote('2단계 시작! +20초'); }
+    else if (c === 100){ S.left += 40000; sortNote('3단계 시작! +40초'); }
+    else if (c >= 200 && c % 100 === 0){ S.left += 50000; sortNote('+50초 보너스!'); }
+  }
+  function sortChoose(side){
+    if (!S.running) return;
+    if (S.piece.s === side){
+      S.correct++;
+      sortMilestones();
+      S.piece = pickPiece();
+      sortRender();
+    } else {
+      sortEnd('wrong');
+    }
+  }
+  function sortEnd(reason){
+    if (!S.running) return;
+    S.running = false;
+    clearInterval(S.timer);
+    var c = S.correct, st = stageOf(c);
+    sortRender();
+    $('#s-start').disabled = false;
+    $('#s-start').textContent = '다시 시작';
+    var head = reason === 'wrong' ? '틀렸어요!' : (reason === 'time' ? '시간 종료!' : '게임을 나갔어요.');
+    var prefix = head + ' 정답 ' + c + '개 · ' + st + '단계';
+    if (c > 0 || reason !== 'quit'){
+      saveResult('sort', c, null, $('#s-msg'), prefix);
+    }
+    S.piece = null;
+    sortRender();
+  }
+  $('#s-start').addEventListener('click', sortStart);
+  $('#s-left').addEventListener('click', function(){ sortChoose('L'); });
+  $('#s-right').addEventListener('click', function(){ sortChoose('R'); });
+  document.addEventListener('keydown', function(e){
+    if (mode !== 'sort' || panel !== 'home' || !S.running) return;
+    if (e.key === 'ArrowLeft'){ e.preventDefault(); sortChoose('L'); }
+    else if (e.key === 'ArrowRight'){ e.preventDefault(); sortChoose('R'); }
   });
 
-  function saveHome(){
-    var score = pending.score, m = mode, el = pending.elapsed == null ? null : pending.elapsed;
-    saveBtn.disabled = true;
-    savedMsg.className = 'saved'; savedMsg.textContent = '저장하는 중...';
-    db.rpc('submit_score', { p_no: me.no, p_mode: m, p_score: score, p_elapsed: el }).then(function(r){
-      if (r.error) throw r.error;
-      return grantIds(recordTitles(m, score, el));
-    }).then(function(){
-      pending = null;
-      lbMode = m;
-      document.querySelectorAll('[data-lb]').forEach(function(x){
-        x.setAttribute('aria-selected', String(x.dataset.lb === lbMode));
-      });
-      savedMsg.className = 'saved ok';
-      savedMsg.textContent = honor(me) + ', 기록을 저장했어요!';
-      return refreshAll();
-    }).catch(function(e){
-      saveBtn.disabled = false;
-      savedMsg.className = 'saved bad';
-      savedMsg.textContent = '저장하지 못했어요: ' + (e && (e.message || e.code) || '');
-    });
-  }
-
-  function saveLeague(){
-    var score = pending.score, m = mode, el = pending.elapsed == null ? null : pending.elapsed;
-    saveBtn.disabled = true;
-    savedMsg.className = 'saved'; savedMsg.textContent = '리그에 반영하는 중...';
-    db.rpc('league_record', { p_no: me.no, p_mode: m, p_score: score, p_elapsed: el }).then(function(r){
-      if (r.error) throw r.error;
-      var best = r.data;
-      return grantIds(recordTitles(m, score, el)).then(function(){
-        pending = null;
-        savedMsg.className = 'saved ok';
-        savedMsg.textContent = '리그 반영 완료! 이번 주 내 최고 기록 ' + fmt(m, best);
-        return refreshAll();
-      });
-    }).catch(function(e){
-      saveBtn.disabled = false;
-      savedMsg.className = 'saved bad';
-      savedMsg.textContent = codeOf(e) === 'not_signed'
-        ? '이번 주 리그에 신청하지 않았어요. 신청은 지난주에 할 수 있었어요.'
-        : '저장하지 못했어요: ' + (e && (e.message || e.code) || '');
-    });
-  }
-
-  /* ---------- all-time board ---------- */
+  /* ---------- 전체 순위 ---------- */
   function loadBoard(){
-    var m = lbMode;
-    db.from('scores').select('no,name,score,created_at')
-      .eq('mode', m).order('score', { ascending: true }).order('created_at', { ascending: true }).limit(10)
-      .then(function(r){
-        if (r.error) throw r.error;
-        return attachTitles(r.data || []);
-      }).then(function(rows){
-        if (m === lbMode) renderBoard(rows);
-      }).catch(function(){
-        $('#empty').hidden = false; $('#empty').textContent = '순위를 불러오지 못했어요.';
-        $('#podium').innerHTML = ''; $('#board').innerHTML = '';
-      });
+    var m = lbMode, r = rangeOf(lbPeriod);
+    var q = db.from('scores').select('no,name,score,created_at').eq('mode', m);
+    if (r.from !== null) q = q.gte('created_at', new Date(r.from).toISOString());
+    if (r.to !== null) q = q.lt('created_at', new Date(r.to).toISOString());
+    q = q.order('score', { ascending: m !== 'sort' }).order('created_at', { ascending: true }).limit(10);
+    q.then(function(res){
+      if (res.error) throw res.error;
+      return attachTitles(res.data || []);
+    }).then(function(rows){
+      if (m === lbMode) renderBoard(rows);
+    }).catch(function(e){
+      $('#empty').hidden = false; $('#empty').textContent = '순위를 불러오지 못했어요: ' + errText(e);
+      $('#podium').innerHTML = ''; $('#board').innerHTML = '';
+    });
   }
 
   function renderBoard(list){
     var pod = $('#podium'), ol = $('#board'), empty = $('#empty');
     pod.innerHTML = ''; ol.innerHTML = '';
     if (!list.length){
-      empty.hidden = false; empty.textContent = '아직 기록이 없어요. 첫 번째 주인공이 되어 보세요!';
+      empty.hidden = false; empty.textContent = '이 기간에는 기록이 없어요. 첫 번째 주인공이 되어 보세요!';
       pod.hidden = true; ol.hidden = true;
       return;
     }
@@ -651,72 +825,52 @@ h2{font-size:17px;margin:0 0 12px}
     });
   }
 
-  /* ---------- league ---------- */
+  /* ---------- 리그 ---------- */
   function loadLeague(){
     var weeks = [];
-    for (var k = -4; k <= 1; k++) weeks.push(weekKey(weekMonday(k)));
+    for (var k = -4; k <= 0; k++) weeks.push(weekKey(weekMonday(k)));
     return db.from('league_entries').select('week,mode,no,name,best,tries,at').in('week', weeks)
       .then(function(r){
         if (r.error) throw r.error;
         return attachTitles(r.data || []);
       }).then(function(entries){
-        league = { cur: weekKey(weekMonday(0)), next: weekKey(weekMonday(1)), entries: entries };
+        league = { cur: weekKey(weekMonday(0)), entries: entries };
         if (panel === 'league') renderLeague();
-      }).catch(function(){
-        $('#lg-msg').className = 'saved bad';
-        $('#lg-msg').textContent = '리그 정보를 불러오지 못했어요.';
+      }).catch(function(e){
+        $('#lg-mine').textContent = '리그 정보를 불러오지 못했어요: ' + errText(e);
       });
   }
 
   function rankedOf(week, m){
     var list = league.entries.filter(function(r){ return r.week === week && r.mode === m; });
-    var played = list.filter(function(r){ return Number(r.best) < NONE; })
-      .sort(function(a, b){ return (Number(a.best) - Number(b.best)) || (Number(a.at) - Number(b.at)); });
-    var rest = list.filter(function(r){ return !(Number(r.best) < NONE); });
-    return { played: played, rest: rest, total: list.length };
+    var played = list.filter(function(r){ return Number(r.best) < NONE; }).sort(bestSort(m));
+    return { played: played, total: list.length };
   }
 
   function renderLeague(){
     if (!league) return;
-    var m = mode, cur = league.cur, next = league.next;
-    $('#lg-sport').textContent = m === 'react' ? '반응속도 리그' : '스톱워치 리그';
+    var m = lgMode, cur = league.cur;
+    $('#lg-sport').textContent = m === 'react' ? '반응속도 리그' : (m === 'stop' ? '스톱워치 리그' : '분류게임 리그');
     $('#lg-cur-range').textContent = weekRange(weekMonday(0)) + ' · 진행 중';
-    $('#lg-next-range').textContent = weekRange(weekMonday(1)) + ' 리그 · 지금 신청할 수 있어요';
-    $('#lg-msg').className = 'saved';
-    $('#lg-msg').textContent = '';
 
     var curRank = rankedOf(cur, m);
-    var nextRank = rankedOf(next, m);
-    var mineCur = curRank.played.concat(curRank.rest).filter(function(r){ return r.no === me.no; })[0];
-    var mineNext = nextRank.played.concat(nextRank.rest).filter(function(r){ return r.no === me.no; })[0];
-
+    var mine = curRank.played.filter(function(r){ return r.no === me.no; })[0];
     var text;
-    if (!mineCur) text = '이번 주 리그에는 신청하지 않았어요.';
-    else if (Number(mineCur.best) < NONE) text = '이번 주 내 최고 기록 ' + fmt(m, mineCur.best) + ' · ' + (curRank.played.indexOf(mineCur) + 1) + '위';
-    else text = '이번 주 리그 신청 완료. 아직 기록이 없어요.';
+    if (!mine) text = '이번 주 기록이 아직 없어요. 홈에서 게임을 하면 자동으로 등록돼요.';
+    else text = '이번 주 내 최고 기록 ' + fmt(m, mine.best) + ' · ' + (curRank.played.indexOf(mine) + 1) + '위';
     $('#lg-mine').textContent = text;
-
-    $('#lg-signup').hidden = !!mineNext;
-    $('#lg-signup').disabled = false;
-    $('#lg-cancel').hidden = !mineNext;
-    $('#lg-cancel').disabled = false;
-    $('#lg-next-count').textContent = '다음 주 신청자 ' + nextRank.total + '명';
 
     var rankOl = $('#lg-rank'), rankEmpty = $('#lg-empty');
     rankOl.innerHTML = '';
-    var all = curRank.played.concat(curRank.rest);
-    rankEmpty.hidden = all.length > 0;
-    rankEmpty.textContent = '이번 주 리그 신청자가 아직 없어요.';
-    all.forEach(function(r, i){
-      var played = Number(r.best) < NONE;
+    rankEmpty.hidden = curRank.played.length > 0;
+    rankEmpty.textContent = '이번 주 기록이 아직 없어요.';
+    curRank.played.forEach(function(r, i){
       var li = document.createElement('li');
-      var rank = document.createElement('span'); rank.className = 'rank';
-      rank.textContent = played ? (i + 1) + '위' : '-';
+      var rank = document.createElement('span'); rank.className = 'rank'; rank.textContent = (i + 1) + '위';
       var who = document.createElement('div'); who.className = 'who'; who.textContent = honorRow(r);
       var small = document.createElement('small'); small.textContent = r.no + '번';
       who.appendChild(small);
-      var sc = document.createElement('span'); sc.className = 'score';
-      sc.textContent = played ? fmt(m, r.best) : '기록 없음';
+      var sc = document.createElement('span'); sc.className = 'score'; sc.textContent = fmt(m, r.best);
       li.appendChild(rank); li.appendChild(who); li.appendChild(sc);
       rankOl.appendChild(li);
     });
@@ -748,32 +902,7 @@ h2{font-size:17px;margin:0 0 12px}
     }
   }
 
-  $('#lg-signup').addEventListener('click', function(){
-    var btn = this; btn.disabled = true;
-    db.rpc('league_signup', { p_no: me.no, p_mode: mode }).then(function(r){
-      if (r.error) throw r.error;
-      $('#lg-msg').className = 'saved ok'; $('#lg-msg').textContent = '다음 주 리그 신청 완료!';
-      return loadLeague();
-    }).catch(function(e){
-      btn.disabled = false;
-      $('#lg-msg').className = 'saved bad';
-      $('#lg-msg').textContent = '신청하지 못했어요: ' + (e && (e.message || e.code) || '');
-    });
-  });
-
-  $('#lg-cancel').addEventListener('click', function(){
-    var btn = this; btn.disabled = true;
-    db.rpc('league_cancel', { p_no: me.no, p_mode: mode }).then(function(r){
-      if (r.error) throw r.error;
-      $('#lg-msg').className = 'saved ok'; $('#lg-msg').textContent = '신청을 취소했어요.';
-      return loadLeague();
-    }).catch(function(){
-      btn.disabled = false;
-      $('#lg-msg').className = 'saved bad'; $('#lg-msg').textContent = '취소하지 못했어요. 잠시 후 다시 해 주세요.';
-    });
-  });
-
-  /* ---------- league titles ---------- */
+  /* ---------- 리그 칭호 (끝난 주 기록으로 계산) ---------- */
   function longestRun(weeks){
     var best = 0, run = 0, prev = null;
     weeks.forEach(function(w){
@@ -797,9 +926,8 @@ h2{font-size:17px;margin:0 0 12px}
         });
         var mine = [];
         Object.keys(groups).forEach(function(k){
-          var g = groups[k].slice().sort(function(a, b){
-            return (Number(a.best) - Number(b.best)) || (Number(a.at) - Number(b.at));
-          });
+          var m = k.split('|')[1];
+          var g = groups[k].slice().sort(bestSort(m));
           g.forEach(function(x, i){
             if (x.no === me.no) mine.push({ week: x.week, mode: x.mode, rank: i + 1 });
           });
@@ -818,19 +946,19 @@ h2{font-size:17px;margin:0 0 12px}
         if (wins >= 10) ids.push('mvp');
 
         var runTop3 = {}, runWin = {};
-        ['react', 'stop'].forEach(function(m){
+        ['react', 'stop', 'sort'].forEach(function(m){
           runTop3[m] = longestRun(mine.filter(function(x){ return x.mode === m && x.rank <= 3; }).map(function(x){ return x.week; }).sort());
           runWin[m] = longestRun(mine.filter(function(x){ return x.mode === m && x.rank === 1; }).map(function(x){ return x.week; }).sort());
         });
-        if (runTop3.react >= 3 || runTop3.stop >= 3) ids.push('elite');
-        if (runWin.react >= 3 || runWin.stop >= 3) ids.push('medal3');
+        if (runTop3.react >= 3 || runTop3.stop >= 3 || runTop3.sort >= 3) ids.push('elite');
+        if (runWin.react >= 3 || runWin.stop >= 3 || runWin.sort >= 3) ids.push('medal3');
         if (runWin.react >= 3 && runWin.stop >= 3) ids.push('world');
 
         return grantIds(ids);
       });
   }
 
-  /* ---------- titles ---------- */
+  /* ---------- 칭호 목록 ---------- */
   function loadTitles(){
     return db.from('user_titles').select('title').eq('no', me.no).then(function(r){
       if (r.error) throw r.error;
@@ -882,9 +1010,9 @@ h2{font-size:17px;margin:0 0 12px}
       $('#title-msg').className = 'saved ok';
       $('#title-msg').textContent = id ? '칭호를 장착했어요.' : '칭호를 해제했어요.';
       return refreshAll();
-    }).catch(function(){
+    }).catch(function(e){
       $('#title-msg').className = 'saved bad';
-      $('#title-msg').textContent = '칭호를 바꾸지 못했어요.';
+      $('#title-msg').textContent = '칭호를 바꾸지 못했어요: ' + errText(e);
     });
   }
 
@@ -894,16 +1022,20 @@ h2{font-size:17px;margin:0 0 12px}
       $('#me').textContent = (me.title ? me.title + ' ' : '') + me.no + '번 ' + honor(me);
       return evaluateLeagueTitles().catch(function(){});
     }).then(loadTitles)
-      .then(loadBoard)
+      .then(function(){ return loadBoard(); })
+      .then(function(){ if (panel === 'league') return loadLeague(); })
       .catch(function(){});
   }
 
-  /* ---------- init ---------- */
+  /* ---------- 키보드 ---------- */
+  // 분류 게임 키보드 조작은 위에서 등록했습니다.
+
+  /* ---------- 시작 ---------- */
   setMode('react');
   var saved = getSavedNo();
   if (saved !== null && !isNaN(saved) && Object.prototype.hasOwnProperty.call(ROSTER, saved)){
     me = { no: saved, name: ROSTER[saved] };
-    loadEquipped().then(showMain).catch(function(){ showEntry(); });
+    loadEquipped().then(showMain).catch(function(){ me = null; showEntry(); });
   } else {
     showEntry();
   }
