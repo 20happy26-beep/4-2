@@ -75,6 +75,14 @@ h2{font-size:17px;margin:0 0 12px}
   font:inherit; font-weight:700; cursor:pointer;
 }
 .nav-btn[aria-selected="true"]{color:var(--accent)}
+.chat-list{list-style:none;margin:0;padding:10px;height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.chat-row{max-width:82%;align-self:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.chat-row.mine{align-self:flex-end;border-color:var(--accent)}
+.chat-who{font-size:12px;color:var(--muted)}
+.chat-body{font-size:15px;white-space:pre-wrap;word-break:break-word;margin-top:2px}
+.chat-empty{color:var(--muted);text-align:center;margin:auto}
+.chat-form{display:flex;gap:8px;margin-top:10px}
+.chat-form input{flex:1;min-width:0;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
 
 .play{
   margin-top:16px; min-height:260px; border-radius:12px; border:1px solid var(--line);
@@ -445,6 +453,22 @@ h2{font-size:17px;margin:0 0 12px}
       </section>
 
     </div>
+
+    <div id="panel-chat" hidden style="display:flex;flex-direction:column;gap:12px">
+      <section class="card" aria-label="우리반 대화">
+        <h2>우리반 대화</h2>
+        <p class="s-hint" style="margin-top:0">우리 반 모두가 같이 보는 대화방이에요. 4초마다 새 메시지를 불러와요.</p>
+        <ul class="chat-list" id="chat-list" style="margin-top:12px"></ul>
+        <div class="chat-form">
+          <input id="chat-text" maxlength="200" placeholder="메시지를 입력하세요" autocomplete="off">
+          <button class="btn primary" id="chat-send">보내기</button>
+        </div>
+        <div class="row" style="justify-content:space-between;margin-top:6px">
+          <span class="saved" id="chat-msg"></span>
+          <span class="s-hint" id="chat-count" style="margin:0">0/200</span>
+        </div>
+      </section>
+    </div>
   </div>
 
 </div>
@@ -459,6 +483,7 @@ h2{font-size:17px;margin:0 0 12px}
 <nav class="bottom-nav" id="bottom-nav" hidden>
   <button class="nav-btn" data-panel="home" aria-selected="true">홈</button>
   <button class="nav-btn" data-panel="league" aria-selected="false">리그</button>
+  <button class="nav-btn" data-panel="chat" aria-selected="false">대화</button>
   <button class="nav-btn" data-panel="title" aria-selected="false">칭호</button>
 </nav>
 
@@ -755,20 +780,92 @@ h2{font-size:17px;margin:0 0 12px}
   /* ---------- 아래 탭 ---------- */
   function showPanel(p){
     stopCurrent('quit');
+    if (p !== 'chat') stopChat();
     panel = p;
     $('#panel-home').hidden = p !== 'home';
     $('#panel-league').hidden = p !== 'league';
     $('#panel-title').hidden = p !== 'title';
+    $('#panel-chat').hidden = p !== 'chat';
     document.querySelectorAll('[data-panel]').forEach(function(b){
       b.setAttribute('aria-selected', String(b.dataset.panel === p));
     });
     if (p === 'home'){ resetGame(); loadBoard(); }
     else if (p === 'league'){ loadLeague(); }
+    else if (p === 'chat'){ startChat(); }
     else { loadTitles(); loadClassTitles(); }
   }
   document.querySelectorAll('[data-panel]').forEach(function(b){
     b.addEventListener('click', function(){ showPanel(b.dataset.panel); });
   });
+
+  /* ---------- 우리반 대화 ---------- */
+  var chatTimer = 0;
+  function chatTime(s){
+    var d = new Date(s), z = function(n){ return (n < 10 ? '0' : '') + n; };
+    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + z(d.getHours()) + ':' + z(d.getMinutes());
+  }
+  function renderChat(rows){
+    var list = $('#chat-list');
+    var atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 40;
+    list.innerHTML = '';
+    if (!rows.length){
+      var e = document.createElement('li');
+      e.className = 'chat-empty';
+      e.textContent = '아직 대화가 없어요. 첫 메시지를 보내 보세요!';
+      list.appendChild(e);
+    }
+    rows.forEach(function(r){
+      var li = document.createElement('li');
+      li.className = 'chat-row' + (me && r.no === me.no ? ' mine' : '');
+      var who = document.createElement('div');
+      who.className = 'chat-who';
+      who.textContent = r.name + ' · ' + chatTime(r.created_at);
+      var body = document.createElement('div');
+      body.className = 'chat-body';
+      body.textContent = r.body;
+      li.appendChild(who);
+      li.appendChild(body);
+      list.appendChild(li);
+    });
+    if (atBottom) list.scrollTop = list.scrollHeight;
+  }
+  function loadChat(){
+    if (!me) return;
+    db.from('class_chat').select('id,no,name,body,created_at').order('id', { ascending: false }).limit(100)
+      .then(function(r){
+        if (r.error){ noteEl($('#chat-msg'), '대화를 불러오지 못했어요. 잠시 후 다시 해 보세요', 'saved bad'); return; }
+        renderChat((r.data || []).slice().reverse());
+      });
+  }
+  function startChat(){
+    stopChat();
+    loadChat();
+    chatTimer = setInterval(loadChat, 4000);
+  }
+  function stopChat(){
+    clearInterval(chatTimer);
+    chatTimer = 0;
+  }
+  function sendChat(){
+    if (!me) return;
+    var input = $('#chat-text');
+    var text = input.value.trim();
+    if (!text){ noteEl($('#chat-msg'), '메시지를 입력하세요', 'saved bad'); return; }
+    if (text.length > 200){ noteEl($('#chat-msg'), '200글자까지 보낼 수 있어요', 'saved bad'); return; }
+    var btn = $('#chat-send');
+    btn.disabled = true;
+    db.from('class_chat').insert({ no: me.no, name: me.name, body: text }).then(function(r){
+      btn.disabled = false;
+      if (r.error){ noteEl($('#chat-msg'), '보내지 못했어요. 다시 해 보세요', 'saved bad'); return; }
+      input.value = '';
+      $('#chat-count').textContent = '0/200';
+      noteEl($('#chat-msg'), '', 'saved');
+      loadChat();
+    });
+  }
+  $('#chat-send').addEventListener('click', sendChat);
+  $('#chat-text').addEventListener('keydown', function(e){ if (e.key === 'Enter') sendChat(); });
+  $('#chat-text').addEventListener('input', function(){ $('#chat-count').textContent = this.value.length + '/200'; });
 
   /* ---------- 게임 고르기 ---------- */
   var RULE = {
