@@ -185,6 +185,8 @@ h2{font-size:17px;margin:0 0 12px}
 .k-btns{display:flex;gap:10px;margin-top:12px}
 .k-btns .sbtn{flex:1}
 .k-btns.swap #k-climb{order:-1}
+#fr-sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;pointer-events:none;padding:0 max(16px,env(safe-area-inset-left,0px)) calc(72px + env(safe-area-inset-bottom,0px))}
+.fr-box{pointer-events:auto;max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;max-height:70vh;overflow-y:auto;box-shadow:0 -8px 28px rgba(0,0,0,.25)}
 </style>
 </head>
 <body>
@@ -346,14 +348,15 @@ h2{font-size:17px;margin:0 0 12px}
         <div id="hold-area" hidden>
           <div class="g-status">
             <span>남은 시간 <b id="h-time">60.0초</b></span>
-            <span>최고 <b id="h-best">0.000초</b></span>
+            <span>기록 <b id="h-best">0.000초</b></span>
+            <span>감점 <b id="h-pen">0초</b></span>
           </div>
           <div class="lights-wrap"><span class="lamp" id="h-lamp"></span></div>
           <div class="play" id="h-pad" role="button" tabindex="0">
             <div class="big" id="h-big">준비</div>
             <div class="hint" id="h-hint">시작을 누르고 초록불을 기다리세요</div>
           </div>
-          <p class="s-hint">초록불이 켜지면 화면을 꾹 누르고, 손을 떼면 누른 시간이 기록돼요. 길수록 좋아요. 빨간불에 누르면 기록에서 1초가 차감돼요. 노란불은 경고예요(점수 없음).</p>
+          <p class="s-hint">빨강 → 초록 → 노랑이 반복돼요. 초록불에 누르고 있던 시간을 모두 더해요. 빨간불에 누르거나 누른 채로 빨간불이 되면 1초가 차감돼요. 노란불은 점수가 없어요.</p>
           <div class="row"><button class="btn primary" id="h-start">시작</button></div>
           <p class="saved" id="h-msg"></p>
         </div>
@@ -361,10 +364,12 @@ h2{font-size:17px;margin:0 0 12px}
         <!-- 무한 계단 -->
         <div id="stair-area" hidden>
           <div class="g-status">
-            <span>올라간 계단 <b id="k-steps">0</b></span>
+            <span>지금 방향 <b id="k-face">◀ 왼쪽</b></span>
+            <span>계단 <b id="k-steps">0</b></span>
             <span>빨라짐 <b id="k-speed">×1.0</b></span>
           </div>
           <div class="gauge"><div class="gauge-fill" id="k-fill"></div></div>
+          <p class="saved" id="k-msg"></p>
           <canvas id="k-canvas" class="game-canvas" width="360" height="320"></canvas>
           <div class="k-btns" id="k-btns">
             <button class="sbtn" id="k-turn" disabled>방향 전환</button>
@@ -374,8 +379,7 @@ h2{font-size:17px;margin:0 0 12px}
             <button class="btn" id="k-swap">버튼 위치 바꾸기</button>
             <button class="btn primary" id="k-start">시작</button>
           </div>
-          <p class="s-hint">다음 계단이 왼쪽에 있으면 ◀, 오른쪽에 있으면 ▶로 방향을 맞춘 뒤 오르기를 누르세요. 방향이 틀리면 떨어져요.</p>
-          <p class="saved" id="k-msg"></p>
+          <p class="s-hint">다음 계단이 왼쪽에 있으면 방향을 ◀, 오른쪽이면 ▶로 맞추고 오르기를 누르세요. 방향이 틀리면 떨어져요.</p>
         </div>
 
       </section>
@@ -393,6 +397,7 @@ h2{font-size:17px;margin:0 0 12px}
           </select>
         </div>
         <div class="tabs" id="lb-tabs" role="tablist" style="margin-top:12px"></div>
+        <div class="tabs" id="lb-sub" hidden style="margin-top:8px"><button class="tab" data-sub="catch" aria-selected="true">일반</button><button class="tab" data-sub="catch_hard" aria-selected="false">하드모드</button></div>
         <div class="podium" id="podium"></div>
         <p class="empty" id="empty" hidden></p>
         <ol class="board" id="board" start="4"></ol>
@@ -403,6 +408,7 @@ h2{font-size:17px;margin:0 0 12px}
     <div id="panel-league" hidden style="display:flex;flex-direction:column;gap:20px">
       <section class="card" aria-label="리그">
         <div class="tabs" id="lgm-tabs" role="tablist" style="margin-top:0"></div>
+        <div class="tabs" id="lgm-sub" hidden style="margin-top:8px"><button class="tab" data-sub="catch" aria-selected="true">일반</button><button class="tab" data-sub="catch_hard" aria-selected="false">하드모드</button></div>
         <div class="head-row" style="margin-top:14px">
           <h2 id="lg-sport" style="margin:0">리그</h2>
           <span class="rule" style="margin:0" id="lg-cur-range"></span>
@@ -438,14 +444,16 @@ h2{font-size:17px;margin:0 0 12px}
         <ol class="board" id="class-list"></ol>
       </section>
 
-      <section class="card" aria-label="친구 기록">
-        <h2 id="fr-title">친구 기록</h2>
-        <p class="rule">이름을 누르면 종목별 최고 기록과 리그 순위를 볼 수 있어요.</p>
-        <div id="fr-body" style="margin-top:12px"><p class="empty">위 목록에서 친구 이름을 눌러 보세요.</p></div>
-      </section>
     </div>
   </div>
 
+</div>
+
+<div id="fr-sheet" hidden>
+  <div class="fr-box">
+    <div class="head-row"><h2 id="fr-title" style="margin:0">친구 기록</h2><button class="btn" id="fr-close">닫기</button></div>
+    <div id="fr-body" style="margin-top:12px"></div>
+  </div>
 </div>
 
 <nav class="bottom-nav" id="bottom-nav" hidden>
@@ -489,6 +497,7 @@ h2{font-size:17px;margin:0 0 12px}
   };
   var MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','catch_hard'];
   var PLAY_MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs'];
+  var LB_MODES = MODES.filter(function(m){ return m !== 'catch_hard'; });
   function isHigh(m){ return GAMES[m].high; }
   function fmt(m, v){ return GAMES[m].unit(v); }
 
@@ -660,8 +669,23 @@ h2{font-size:17px;margin:0 0 12px}
     });
   }
   buildTabs($('#mode-tabs'), 'mode', function(m){ setMode(m); }, PLAY_MODES);
-  buildTabs($('#lb-tabs'), 'lb', function(m){ lbMode = m; selectTab($('#lb-tabs'), 'lb', m); loadBoard(); });
-  buildTabs($('#lgm-tabs'), 'lgm', function(m){ lgMode = m; selectTab($('#lgm-tabs'), 'lgm', m); renderLeague(); });
+  function syncSub(tabsId, attr, subId, cur){
+    var base = cur === 'catch_hard' ? 'catch' : cur;
+    selectTab($(tabsId), attr, base);
+    var box = $(subId);
+    box.hidden = base !== 'catch';
+    box.querySelectorAll('.tab').forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.sub === cur)); });
+  }
+  buildTabs($('#lb-tabs'), 'lb', function(m){ lbMode = m; syncSub('#lb-tabs', 'lb', '#lb-sub', lbMode); loadBoard(); }, LB_MODES);
+  $('#lb-sub').addEventListener('click', function(e){
+    var b = e.target.closest('.tab'); if (!b) return;
+    lbMode = b.dataset.sub; syncSub('#lb-tabs', 'lb', '#lb-sub', lbMode); loadBoard();
+  });
+  buildTabs($('#lgm-tabs'), 'lgm', function(m){ lgMode = m; syncSub('#lgm-tabs', 'lgm', '#lgm-sub', lgMode); renderLeague(); }, LB_MODES);
+  $('#lgm-sub').addEventListener('click', function(e){
+    var b = e.target.closest('.tab'); if (!b) return;
+    lgMode = b.dataset.sub; syncSub('#lgm-tabs', 'lgm', '#lgm-sub', lgMode); renderLeague();
+  });
 
   /* ---------- 번호 입력 ---------- */
   function lookupNo(){
@@ -758,7 +782,7 @@ h2{font-size:17px;margin:0 0 12px}
     rps: '가위, 바위, 보 중 하나를 고르세요. AI가 고른 것과 비교해서 이기면 계속 이어가고, 지면 게임이 끝나요. 무승부면 다시 고르면 돼요. 기록은 연승 수예요.',
     catch: '30초 동안 떨어지는 아이템을 바구니로 받으세요. ⭐️ +2점, 🌟 +5점, 💣 -3점. 바구니는 화면을 끌거나 ◀ ▶ 버튼으로 움직여요. 추가 시간은 없어요. 하드모드에서는 ⚠️ -5점, ⛔️ -10점, 🎁 +7점이 더 나와요. 하드모드는 따로 순위를 매겨요.',
     stairs: '시간 게이지가 다 닳기 전에 다음 계단으로 올라가세요. 다음 계단이 왼쪽이면 방향을 ◀로, 오른쪽이면 ▶로 맞춘 뒤 오르기를 누르세요. 방향이 틀리면 떨어져요. 계단을 오를 때마다 게이지가 회복되고, 올라갈수록 게이지가 빨리 닳아요. 게이지가 끝나거나 떨어지면 끝나고, 오른 계단 수가 기록이에요.',
-    hold: '빨간불에서 기다리다 노란불을 거쳐 초록불이 켜지면 화면을 꾹 누르고, 손을 떼면 누른 시간이 기록돼요. 60초 동안 여러 번 할 수 있고, 가장 긴 시간이 기록이에요. 빨간불에 누르면 기록에서 1초가 차감돼요. 노란불은 경고만 하고 감점은 없어요. 추가 시간은 없어요.',
+    hold: '빨강 → 초록 → 노랑이 반복돼요. 초록불에 화면을 꾹 누르고 있던 시간을 모두 더해요(60초 동안). 노란불은 점수가 없어요. 빨간불에 누르거나, 누른 채로 빨간불이 되면 1초가 차감돼요. 추가 시간은 없어요.',
     catch_hard: '하드모드입니다. 아이템에 ⚠️ -5점, ⛔️ -10점, 🎁 +7점이 추가돼요. 제한 시간과 규칙은 일반 모드와 같아요.'
   };
   var AREA = {
@@ -1569,108 +1593,108 @@ h2{font-size:17px;margin:0 0 12px}
   });
 
   /* ---------- 초록 타이밍 (꾹 누르기) ---------- */
-  // 빨간불에 누르면 기록에서 1초(1000ms)가 차감돼요. 노란불은 경고만 하고 점수 변화는 없어요.
+  // 빨강 → 초록 → 노랑 → 빨강 … 순서로 반복돼요.
+  // 초록불에 누르고 있던 시간을 모두 더해요. 노란불은 점수가 없어요.
+  // 빨간불에 새로 누르면 -1초, 누른 채로 빨간불이 되어도 -1초예요.
   function makeHD(){
-    return { running:false, left:60000, last:0, timer:0, gt:0, phase:'idle', holdAt:0, best:0, penalty:0 };
+    return { running:false, left:60000, last:0, timer:0, phase:'idle', phaseEnd:0, holding:false, total:0, penalty:0 };
   }
   var HD = makeHD();
-  function hdRec(){ return Math.max(0, HD.best - HD.penalty); }
-  function hdShow(){ $('#h-best').textContent = (hdRec() / 1000).toFixed(3) + '초'; }
+  function hdRec(){ return Math.max(0, Math.round(HD.total - HD.penalty)); }
+  function hdShow(){
+    $('#h-best').textContent = (hdRec() / 1000).toFixed(3) + '초';
+    $('#h-pen').textContent = '-' + Math.round(HD.penalty / 1000) + '초';
+  }
   function hdLamp(c){ $('#h-lamp').className = 'lamp' + (c ? ' ' + c : ''); }
+  function hdSetPhase(p){
+    HD.phase = p;
+    var now = performance.now();
+    if (p === 'red'){
+      HD.phaseEnd = now + 1500 + Math.random() * 1500;
+      hdLamp('on-red');
+      $('#h-big').textContent = '기다리세요';
+      $('#h-hint').textContent = '빨간불에는 누르지 마세요';
+      if (HD.holding){
+        HD.penalty += 1000;
+        hdShow();
+        noteEl($('#h-msg'), '누르고 있는 채로 빨간불이 됐어요 (-1초)', 'saved bad');
+      }
+    } else if (p === 'green'){
+      HD.phaseEnd = now + 2000 + Math.random() * 1000;
+      hdLamp('on-green');
+      $('#h-big').textContent = '지금!';
+      $('#h-hint').textContent = '누르고 있는 시간이 쌓여요';
+    } else if (p === 'yellow'){
+      HD.phaseEnd = now + 800;
+      hdLamp('on-yellow');
+      $('#h-big').textContent = '노란불';
+      $('#h-hint').textContent = '잠깐 멈추세요 (점수 없음)';
+    }
+  }
   function hdIdle(){
-    clearInterval(HD.timer); clearTimeout(HD.gt);
+    clearInterval(HD.timer);
     HD = makeHD();
     hdLamp('');
     $('#h-big').textContent = '준비';
     $('#h-hint').textContent = '시작을 누르고 초록불을 기다리세요';
     $('#h-time').textContent = '60.0초';
     $('#h-best').textContent = '0.000초';
+    $('#h-pen').textContent = '0초';
     $('#h-start').disabled = false;
     $('#h-start').textContent = '시작';
     $('#h-msg').textContent = '';
   }
-  function hdRed(){
-    clearTimeout(HD.gt);
-    HD.phase = 'red';
-    hdLamp('on-red');
-    $('#h-big').textContent = '기다리세요';
-    $('#h-hint').textContent = '초록불이 켜질 때까지 누르지 마세요';
-    HD.gt = setTimeout(hdYellow, 1500 + Math.random() * 2000);
-  }
-  function hdYellow(){
-    if (!HD.running || HD.phase !== 'red') return;
-    HD.phase = 'yellow';
-    hdLamp('on-yellow');
-    $('#h-big').textContent = '노란불';
-    $('#h-hint').textContent = '곧 초록불이에요. 아직 누르지 마세요';
-    HD.gt = setTimeout(hdGreen, 900);
-  }
-  function hdGreen(){
-    if (!HD.running || HD.phase !== 'yellow') return;
-    HD.phase = 'green';
-    hdLamp('on-green');
-    $('#h-big').textContent = '지금!';
-    $('#h-hint').textContent = '누르고 계세요 (손을 떼면 기록돼요)';
-  }
   function hdHoldStart(){
     if (!HD.running) return;
+    HD.holding = true;
     if (HD.phase === 'red'){
       HD.penalty += 1000;
-      noteEl($('#h-msg'), '빨간불에 누르면 기록에서 1초가 차감돼요 (-1.000초)', 'saved bad');
       hdShow();
-      hdRed();
-      return;
-    }
-    if (HD.phase === 'yellow'){
-      noteEl($('#h-msg'), '노란불이에요. 초록불이 켜지면 누르세요 (감점 없음)', 'saved');
-      return;
-    }
-    if (HD.phase === 'green'){
-      HD.phase = 'hold';
-      HD.holdAt = performance.now();
-      $('#h-hint').textContent = '계속 누르고 있으세요';
+      noteEl($('#h-msg'), '빨간불에 누르면 -1초', 'saved bad');
+    } else if (HD.phase === 'yellow'){
+      noteEl($('#h-msg'), '노란불이에요. 점수는 없어요', 'saved');
+    } else if (HD.phase === 'green'){
       $('#h-msg').textContent = '';
     }
   }
   function hdHoldEnd(){
-    if (!HD.running || HD.phase !== 'hold') return;
-    var dur = Math.round(performance.now() - HD.holdAt);
-    if (dur > HD.best) HD.best = dur;
-    hdShow();
-    noteEl($('#h-msg'), '이번 기록: ' + (dur / 1000).toFixed(3) + '초', 'saved ok');
-    hdRed();
+    if (!HD.running) return;
+    HD.holding = false;
   }
   function hdTick(){
     if (!HD.running) return;
     var now = performance.now();
-    HD.left -= now - HD.last;
+    var dt = now - HD.last;
     HD.last = now;
-    if (HD.left <= 0){
-      HD.left = 0;
-      if (HD.phase === 'hold'){
-        var dur = Math.round(now - HD.holdAt);
-        if (dur > HD.best) HD.best = dur;
-      }
-      hdEnd('time');
-      return;
+    HD.left -= dt;
+    if (HD.left <= 0){ HD.left = 0; hdEnd('time'); return; }
+    if (HD.holding && HD.phase === 'green'){
+      HD.total += dt;
+      hdShow();
+    }
+    if (now >= HD.phaseEnd){
+      if (HD.phase === 'red') hdSetPhase('green');
+      else if (HD.phase === 'green') hdSetPhase('yellow');
+      else if (HD.phase === 'yellow') hdSetPhase('red');
     }
     $('#h-time').textContent = (HD.left / 1000).toFixed(1) + '초';
-    if (HD.phase === 'hold') $('#h-big').textContent = ((now - HD.holdAt) / 1000).toFixed(3) + '초';
   }
   function hdStart(){
     if (HD.running) return;
     hdIdle();
     HD.running = true;
     HD.last = performance.now();
-    HD.timer = setInterval(hdTick, 100);
+    HD.timer = setInterval(hdTick, 50);
     $('#h-start').disabled = true;
-    hdRed();
+    hdSetPhase('red');
+    hdShow();
   }
   function hdEnd(reason){
     if (!HD.running) return;
     HD.running = false;
-    clearInterval(HD.timer); clearTimeout(HD.gt);
+    clearInterval(HD.timer);
     HD.phase = 'idle';
+    HD.holding = false;
     hdLamp('');
     var rec = hdRec();
     $('#h-big').textContent = '끝!';
@@ -1681,7 +1705,7 @@ h2{font-size:17px;margin:0 0 12px}
     $('#h-start').textContent = '다시 시작';
     var head = reason === 'time' ? '시간 종료!' : '게임을 나갔어요.';
     if (rec > 0 || reason !== 'quit'){
-      saveResult('hold', rec, null, $('#h-msg'), head + ' 최고 ' + (rec / 1000).toFixed(3) + '초');
+      saveResult('hold', rec, null, $('#h-msg'), head + ' 기록 ' + (rec / 1000).toFixed(3) + '초');
     }
   }
   var hpad = $('#h-pad');
@@ -1702,7 +1726,7 @@ h2{font-size:17px;margin:0 0 12px}
     return { running:false, steps:0, facing:'L', sides:['-'], xs:[0], gauge:1, last:0, timer:0 };
   }
   var KS = makeKS();
-  // 계단 k의 위치(왼쪽/오른쪽)는 처음 필요할 때 정해서 기억해 둬요.
+  // 계단의 위치(왼쪽/오른쪽)는 필요할 때 한 번 정하고 기억해 둬요.
   function sideAt(k){
     while (KS.sides.length <= k) KS.sides.push(Math.random() < 0.5 ? 'L' : 'R');
     return KS.sides[k];
@@ -1715,6 +1739,7 @@ h2{font-size:17px;margin:0 0 12px}
     return KS.xs[k];
   }
   function decayRate(){ return Math.min(1.2, 0.5 + KS.steps * 0.02); }
+  // 캔버스는 계단이 바뀔 때만 다시 그려요 (매 순간 다시 그리지 않아서 빨라요).
   function stairsDraw(){
     kcx.clearRect(0, 0, BW, BH);
     var cur = KS.steps, base = xAt(cur);
@@ -1730,14 +1755,14 @@ h2{font-size:17px;margin:0 0 12px}
     kcx.textAlign = 'start';
     kcx.textBaseline = 'alphabetic';
   }
-  function stairsUI(){
+  // 글자와 게이지만 바꿔요.
+  function stairsRefresh(){
     $('#k-steps').textContent = KS.steps;
     $('#k-speed').textContent = '×' + (decayRate() / 0.5).toFixed(1);
     $('#k-fill').style.width = (KS.gauge * 100).toFixed(1) + '%';
-    $('#k-turn').textContent = '방향 전환 (지금 ' + (KS.facing === 'L' ? '◀' : '▶') + ')';
+    $('#k-face').textContent = KS.facing === 'L' ? '◀ 왼쪽' : '오른쪽 ▶';
     $('#k-turn').disabled = !KS.running;
     $('#k-climb').disabled = !KS.running;
-    stairsDraw();
   }
   function stairsIdle(){
     clearInterval(KS.timer);
@@ -1745,44 +1770,46 @@ h2{font-size:17px;margin:0 0 12px}
     $('#k-start').disabled = false;
     $('#k-start').textContent = '시작';
     $('#k-msg').textContent = '';
-    stairsUI();
+    stairsDraw();
+    stairsRefresh();
   }
   function stairsStart(){
     if (KS.running) return;
     stairsIdle();
     KS.running = true;
     KS.last = performance.now();
-    KS.timer = setInterval(stairsTick, 50);
+    KS.timer = setInterval(stairsTick, 100);
     $('#k-start').disabled = true;
-    stairsUI();
+    noteEl($('#k-msg'), '다음 계단 쪽으로 방향을 맞추고 오르기를 누르세요', 'saved');
+    stairsRefresh();
   }
   function stairsTick(){
     if (!KS.running) return;
     var now = performance.now();
-    var dt = (now - KS.last) / 1000;
+    KS.gauge -= decayRate() * (now - KS.last) / 1000;
     KS.last = now;
-    KS.gauge -= decayRate() * dt;
     if (KS.gauge <= 0){ KS.gauge = 0; stairsEnd('time'); return; }
-    stairsUI();
+    stairsRefresh();
   }
   function stairsTurn(){
     if (!KS.running) return;
     KS.facing = KS.facing === 'L' ? 'R' : 'L';
-    stairsUI();
+    stairsRefresh();
   }
   function stairsClimb(){
     if (!KS.running) return;
     if (KS.facing !== sideAt(KS.steps + 1)){ stairsEnd('fall'); return; }
     KS.steps++;
     KS.gauge = Math.min(1, KS.gauge + 0.4);
-    noteEl($('#k-msg'), KS.steps + '계단 올라갔어요! 게이지 회복', 'saved ok');
-    stairsUI();
+    noteEl($('#k-msg'), KS.steps + '계단! 게이지가 회복됐어요', 'saved ok');
+    stairsDraw();
+    stairsRefresh();
   }
   function stairsEnd(reason){
     if (!KS.running) return;
     KS.running = false;
     clearInterval(KS.timer);
-    stairsUI();
+    stairsRefresh();
     $('#k-start').disabled = false;
     $('#k-start').textContent = '다시 시작';
     var head = reason === 'time' ? '시간 종료!' : (reason === 'fall' ? '떨어졌어요!' : '게임을 나갔어요.');
@@ -2089,6 +2116,7 @@ h2{font-size:17px;margin:0 0 12px}
   function showFriend(n){
     var seq = ++friendSeq;
     var box = $('#fr-body');
+    $('#fr-sheet').hidden = false;
     $('#fr-title').textContent = n + '번 ' + ROSTER[n] + ' 기록' + (n === me.no ? ' (나)' : '');
     box.textContent = '불러오는 중...';
     Promise.all([
@@ -2126,6 +2154,7 @@ h2{font-size:17px;margin:0 0 12px}
       box.textContent = '기록을 불러오지 못했어요: ' + errText(e);
     });
   }
+  $('#fr-close').addEventListener('click', function(){ $('#fr-sheet').hidden = true; });
   $('#class-list').addEventListener('click', function(e){
     var li = e.target.closest('li[data-no]');
     if (li) showFriend(Number(li.dataset.no));
