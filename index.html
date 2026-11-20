@@ -128,6 +128,15 @@ h2{font-size:17px;margin:0 0 12px}
 .hole.gold{background:#c9a227}
 .hole.bomb{background:#a33a2d}
 
+/* 기억력 패턴 */
+.memgrid{display:grid;gap:8px;margin:12px auto 0;width:100%;max-width:420px;aspect-ratio:1;touch-action:manipulation}
+.mcell{border:2px solid var(--line);border-radius:12%;background:rgba(120,125,150,.35);padding:0;cursor:pointer;transition:background .12s,transform .12s;-webkit-tap-highlight-color:transparent}
+.mcell.lit{background:#ffc233;transform:scale(.94)}
+.mcell.show{background:#ffc233}
+.mcell.ok{background:var(--ok)}
+.mcell.bad{background:var(--stop)}
+@media (prefers-reduced-motion:reduce){.mcell{transition:none}}
+
 /* 숨은 오타 */
 .tgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-top:12px}
 .cell{
@@ -390,6 +399,18 @@ h2{font-size:17px;margin:0 0 12px}
           <p class="s-hint">다음 계단이 왼쪽에 있으면 방향을 ◀, 오른쪽이면 ▶로 맞추고 오르기를 누르세요. 방향이 틀리면 떨어져요.</p>
         </div>
 
+        <!-- 기억력 패턴 -->
+        <div id="mem-area" hidden>
+          <div class="g-status">
+            <span>레벨 <b id="mem-level">1</b></span>
+            <span id="mem-hearts">❤️❤️❤️</span>
+          </div>
+          <p class="s-hint" id="mem-hint">시작을 누르세요</p>
+          <div class="memgrid" id="mem-grid"></div>
+          <div class="row"><button class="btn primary" id="mem-start">시작</button></div>
+          <p class="saved" id="mem-msg"></p>
+        </div>
+
       </section>
 
       <section class="card" aria-label="전체 순위">
@@ -518,10 +539,11 @@ h2{font-size:17px;margin:0 0 12px}
     catch:{ label:'하늘에서 쏟아진다 받아라', high:true, unit:function(v){ return v + ' 점'; } },
     hold:{ label:'초록 타이밍', high:true, unit:function(v){ return (v / 1000).toFixed(3) + '초'; } },
     stairs:{ label:'무한 계단', high:true, unit:function(v){ return v + ' 계단'; } },
-    catch_hard:{ label:'쏟아진다 하드모드', high:true, unit:function(v){ return v + ' 점'; } }
+    catch_hard:{ label:'쏟아진다 하드모드', high:true, unit:function(v){ return v + ' 점'; } },
+    memory:{ label:'기억력 패턴', high:true, unit:function(v){ return v + ' 레벨'; } }
   };
-  var MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','catch_hard'];
-  var PLAY_MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs'];
+  var MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','catch_hard','memory'];
+  var PLAY_MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','memory'];
   var LB_MODES = MODES.filter(function(m){ return m !== 'catch_hard'; });
   function isHigh(m){ return GAMES[m].high; }
   function fmt(m, v){ return GAMES[m].unit(v); }
@@ -880,14 +902,15 @@ h2{font-size:17px;margin:0 0 12px}
     catch: '30초 동안 떨어지는 아이템을 바구니로 받으세요. ⭐️ +2점, 🌟 +5점, 💣 -3점. 바구니는 화면을 끌거나 ◀ ▶ 버튼으로 움직여요. 추가 시간은 없어요. 하드모드에서는 ⚠️ -5점, ⛔️ -10점, 🎁 +7점이 더 나와요. 하드모드는 따로 순위를 매겨요.',
     stairs: '시간 게이지가 다 닳기 전에 다음 계단으로 올라가세요. 다음 계단이 왼쪽이면 방향을 ◀로, 오른쪽이면 ▶로 맞춘 뒤 오르기를 누르세요. 방향이 틀리면 떨어져요. 계단을 오를 때마다 게이지가 회복되고, 올라갈수록 게이지가 빨리 닳아요. 게이지가 끝나거나 떨어지면 끝나고, 오른 계단 수가 기록이에요.',
     hold: '빨강 → 초록 → 노랑이 반복돼요. 초록불에 화면을 꾹 누르고 있던 시간을 모두 더해요(60초 동안). 노란불은 점수가 없어요. 빨간불에 누르거나, 누른 채로 빨간불이 되면 1초가 차감돼요. 추가 시간은 없어요.',
-    catch_hard: '하드모드입니다. 아이템에 ⚠️ -5점, ⛔️ -10점, 🎁 +7점이 추가돼요. 제한 시간과 규칙은 일반 모드와 같아요.'
+    catch_hard: '하드모드입니다. 아이템에 ⚠️ -5점, ⛔️ -10점, 🎁 +7점이 추가돼요. 제한 시간과 규칙은 일반 모드와 같아요.',
+    memory: '잠깐 켜지는 칸을 잘 보고 기억하세요. 칸이 꺼지면 켜졌던 칸을 모두 누르면 되고, 순서는 상관없어요. 다 맞히면 다음 레벨로 올라가고 칸 수와 켜지는 칸이 늘어나요. 틀리면 하트가 하나 줄고 같은 레벨을 다시 해요. 하트 3개가 모두 없어지면 끝나고, 도달한 레벨이 기록이에요.'
   };
   var AREA = {
     react:'#play-area', stop:'#play-area', sort:'#sort-area', mole:'#mole-area', dino:'#dino-area',
     typo:'#typo-area', shoot:'#shoot-area', rps:'#rps-area', catch:'#catch-area',
-    hold:'#hold-area', catch_hard:'#catch-area', stairs:'#stair-area'
+    hold:'#hold-area', catch_hard:'#catch-area', stairs:'#stair-area', memory:'#mem-area'
   };
-  var AREA_IDS = ['#play-area','#sort-area','#mole-area','#dino-area','#typo-area','#shoot-area','#rps-area','#catch-area','#hold-area','#stair-area'];
+  var AREA_IDS = ['#play-area','#sort-area','#mole-area','#dino-area','#typo-area','#shoot-area','#rps-area','#catch-area','#hold-area','#stair-area','#mem-area'];
 
   function stopCurrent(reason){
     if (S.running) sortEnd(reason);
@@ -899,6 +922,7 @@ h2{font-size:17px;margin:0 0 12px}
     if (CT && CT.running) catchEnd(reason);
     if (KS && KS.running) stairsEnd(reason);
     if (HD && HD.running) hdEnd(reason);
+    if (MEM && MEM.running) memEnd(reason);
   }
 
   function setMode(m){
@@ -937,6 +961,7 @@ h2{font-size:17px;margin:0 0 12px}
     if (mode === 'catch') catchIdle();
     if (mode === 'stairs') stairsIdle();
     if (mode === 'hold') hdIdle();
+    if (mode === 'memory') memIdle();
   }
 
   /* ---------- 번개 터치, 10초 딱 ---------- */
@@ -1565,6 +1590,126 @@ h2{font-size:17px;margin:0 0 12px}
     b.addEventListener('click', function(){ rpsPlay(b.dataset.rps); });
   });
   $('#rps-start').addEventListener('click', rpsStart);
+
+  /* ---------- 기억력 패턴 ---------- */
+  // [시작레벨, 끝레벨, 격자 크기, 켜지는 칸 시작값, 끝값]
+  var MEM_RANGES = [[1,10,3,3,5],[11,20,4,5,8],[21,35,5,8,12],[36,50,6,12,16],[51,100,7,16,22]];
+  var MEM = null, memEls = [], memGen = 0;
+  function memSpec(l){
+    var r = MEM_RANGES[MEM_RANGES.length - 1];
+    for (var k = 0; k < MEM_RANGES.length; k++){ if (l <= MEM_RANGES[k][1]){ r = MEM_RANGES[k]; break; } }
+    var t = Math.min(1, (l - r[0]) / (r[1] - r[0]));
+    return { n: r[2], lit: Math.round(r[3] + (r[4] - r[3]) * t) };
+  }
+  function makeMEM(){ return { running:false, level:1, hearts:3, ans:[], found:[], phase:'idle' }; }
+  MEM = makeMEM();
+  function memHud(){
+    $('#mem-level').textContent = MEM.level;
+    $('#mem-hearts').textContent = '❤️'.repeat(MEM.hearts) + '🖤'.repeat(3 - MEM.hearts);
+  }
+  function memBuild(n){
+    var grid = $('#mem-grid');
+    grid.innerHTML = '';
+    grid.style.gridTemplateColumns = 'repeat(' + n + ',1fr)';
+    grid.style.gap = (n >= 7 ? 3 : n >= 6 ? 4 : n >= 5 ? 6 : 8) + 'px';
+    memEls = [];
+    for (var i = 0; i < n * n; i++){
+      (function(idx){
+        var b = document.createElement('button');
+        b.className = 'mcell';
+        b.setAttribute('aria-label', (idx + 1) + '번 칸');
+        b.addEventListener('pointerdown', function(e){ e.preventDefault(); memTap(idx); });
+        grid.appendChild(b);
+        memEls.push(b);
+      })(i);
+    }
+  }
+  function memIdle(){
+    memGen++;
+    MEM = makeMEM();
+    memBuild(3);
+    memHud();
+    $('#mem-hint').textContent = '시작을 누르세요';
+    $('#mem-start').disabled = false;
+    $('#mem-start').textContent = '시작';
+    $('#mem-msg').textContent = ''; $('#mem-msg').className = 'saved';
+  }
+  function memStart(){
+    if (MEM.running) return;
+    memGen++;
+    MEM = makeMEM();
+    MEM.running = true;
+    $('#mem-start').disabled = true;
+    $('#mem-msg').textContent = ''; $('#mem-msg').className = 'saved';
+    memRound();
+  }
+  function memRound(){
+    var gen = memGen;
+    var sp = memSpec(MEM.level);
+    memBuild(sp.n); memHud();
+    var total = sp.n * sp.n, ans = [];
+    while (ans.length < sp.lit){
+      var r = Math.floor(Math.random() * total);
+      if (ans.indexOf(r) < 0) ans.push(r);
+    }
+    MEM.ans = ans; MEM.found = []; MEM.phase = 'show';
+    $('#mem-hint').textContent = '잘 보세요 (' + sp.lit + '칸)';
+    setTimeout(function(){
+      if (gen !== memGen) return;
+      ans.forEach(function(i){ memEls[i].classList.add('lit'); });
+      setTimeout(function(){
+        if (gen !== memGen) return;
+        ans.forEach(function(i){ memEls[i].classList.remove('lit'); });
+        MEM.phase = 'input';
+        $('#mem-hint').textContent = '켜졌던 칸을 모두 누르세요';
+      }, 900 + sp.lit * 70);
+    }, 700);
+  }
+  function memTap(i){
+    if (!MEM.running || MEM.phase !== 'input') return;
+    if (MEM.found.indexOf(i) >= 0) return;
+    if (MEM.ans.indexOf(i) >= 0){
+      MEM.found.push(i);
+      memEls[i].classList.add('ok');
+      if (MEM.found.length === MEM.ans.length){
+        MEM.phase = 'wait';
+        $('#mem-hint').textContent = '성공!';
+        MEM.level++;
+        var gen = memGen;
+        setTimeout(function(){ if (gen === memGen) memRound(); }, 700);
+      }
+    } else {
+      memMiss(i);
+    }
+  }
+  function memMiss(i){
+    var gen = memGen;
+    MEM.phase = 'wait';
+    memEls[i].classList.add('bad');
+    if (navigator.vibrate) navigator.vibrate(120);
+    MEM.hearts--;
+    memHud();
+    MEM.ans.forEach(function(k){ if (MEM.found.indexOf(k) < 0) memEls[k].classList.add('show'); });
+    $('#mem-hint').textContent = MEM.hearts > 0 ? '틀렸어요! 같은 레벨을 다시 해요' : '틀렸어요!';
+    setTimeout(function(){
+      if (gen !== memGen) return;
+      if (MEM.hearts > 0) memRound(); else memEnd('lose');
+    }, 1400);
+  }
+  function memEnd(reason){
+    if (!MEM.running) return;
+    MEM.running = false;
+    memGen++;
+    $('#mem-start').disabled = false;
+    $('#mem-start').textContent = '다시 시작';
+    var lv = MEM.level;
+    $('#mem-hint').textContent = reason === 'lose' ? '게임 끝!' : '게임을 나갔어요.';
+    var prefix = (reason === 'lose' ? '게임 끝! ' : '게임을 나갔어요. ') + lv + '레벨';
+    if (lv > 1 || reason === 'lose'){
+      saveResult('memory', lv, null, $('#mem-msg'), prefix);
+    }
+  }
+  $('#mem-start').addEventListener('click', memStart);
 
   /* ---------- 하늘에서 쏟아진다 받아라 (캐치) ---------- */
   var catchHardOn = false;
