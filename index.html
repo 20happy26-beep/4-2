@@ -137,6 +137,12 @@ h2{font-size:17px;margin:0 0 12px}
 .mcell.bad{background:var(--stop)}
 @media (prefers-reduced-motion:reduce){.mcell{transition:none}}
 
+/* 눈대중 길이 */
+.lenstage{position:relative;width:100%;max-width:520px;height:260px;margin:12px auto 0;border:2px dashed var(--line);border-radius:14px;touch-action:none;user-select:none;-webkit-user-select:none}
+.lenline{position:absolute;height:10px;border-radius:5px;background:#ffc233}
+.lenline.me{background:var(--accent,#e4572e)}
+.lenline.ans{background:var(--ok)}
+
 /* 숨은 오타 */
 .tgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-top:12px}
 .cell{
@@ -411,6 +417,18 @@ h2{font-size:17px;margin:0 0 12px}
           <p class="saved" id="mem-msg"></p>
         </div>
 
+        <!-- 눈대중 길이 -->
+        <div id="len-area" hidden>
+          <div class="g-status">
+            <span>라운드 <b id="len-round">0</b>/5</span>
+            <span>총점 <b id="len-total">0.0</b></span>
+          </div>
+          <p class="s-hint" id="len-hint">시작을 누르세요</p>
+          <div class="lenstage" id="len-stage"></div>
+          <div class="row"><button class="btn primary" id="len-start">시작</button></div>
+          <p class="saved" id="len-msg"></p>
+        </div>
+
       </section>
 
       <section class="card" aria-label="전체 순위">
@@ -540,10 +558,11 @@ h2{font-size:17px;margin:0 0 12px}
     hold:{ label:'초록 타이밍', high:true, unit:function(v){ return (v / 1000).toFixed(3) + '초'; } },
     stairs:{ label:'무한 계단', high:true, unit:function(v){ return v + ' 계단'; } },
     catch_hard:{ label:'쏟아진다 하드모드', high:true, unit:function(v){ return v + ' 점'; } },
-    memory:{ label:'기억력 패턴', high:true, unit:function(v){ return v + ' 레벨'; } }
+    memory:{ label:'기억력 패턴', high:true, unit:function(v){ return v + ' 레벨'; } },
+    length:{ label:'눈대중 길이', high:true, unit:function(v){ return (v / 10).toFixed(1) + ' 점'; } }
   };
-  var MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','catch_hard','memory'];
-  var PLAY_MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','memory'];
+  var MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','catch_hard','memory','length'];
+  var PLAY_MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','memory','length'];
   var LB_MODES = MODES.filter(function(m){ return m !== 'catch_hard'; });
   function isHigh(m){ return GAMES[m].high; }
   function fmt(m, v){ return GAMES[m].unit(v); }
@@ -903,14 +922,15 @@ h2{font-size:17px;margin:0 0 12px}
     stairs: '시간 게이지가 다 닳기 전에 다음 계단으로 올라가세요. 다음 계단이 왼쪽이면 방향을 ◀로, 오른쪽이면 ▶로 맞춘 뒤 오르기를 누르세요. 방향이 틀리면 떨어져요. 계단을 오를 때마다 게이지가 회복되고, 올라갈수록 게이지가 빨리 닳아요. 게이지가 끝나거나 떨어지면 끝나고, 오른 계단 수가 기록이에요.',
     hold: '빨강 → 초록 → 노랑이 반복돼요. 초록불에 화면을 꾹 누르고 있던 시간을 모두 더해요(60초 동안). 노란불은 점수가 없어요. 빨간불에 누르거나, 누른 채로 빨간불이 되면 1초가 차감돼요. 추가 시간은 없어요.',
     catch_hard: '하드모드입니다. 아이템에 ⚠️ -5점, ⛔️ -10점, 🎁 +7점이 추가돼요. 제한 시간과 규칙은 일반 모드와 같아요.',
-    memory: '잠깐 켜지는 칸을 잘 보고 기억하세요. 칸이 꺼지면 켜졌던 칸을 모두 누르면 되고, 순서는 상관없어요. 다 맞히면 다음 레벨로 올라가고 칸 수와 켜지는 칸이 늘어나요. 틀리면 하트가 하나 줄고 같은 레벨을 다시 해요. 하트 3개가 모두 없어지면 끝나고, 도달한 레벨이 기록이에요.'
+    memory: '잠깐 켜지는 칸을 잘 보고 기억하세요. 칸이 꺼지면 켜졌던 칸을 모두 누르면 되고, 순서는 상관없어요. 다 맞히면 다음 레벨로 올라가고 칸 수와 켜지는 칸이 늘어나요. 틀리면 하트가 하나 줄고 같은 레벨을 다시 해요. 하트 3개가 모두 없어지면 끝나고, 도달한 레벨이 기록이에요.',
+    length: '선이 1초 동안 보였다가 사라져요. 그 길이를 기억해서 손가락을 끌어 같은 길이로 그리세요. 한 판은 5라운드이고, 라운드마다 100점에서 오차율(%)만큼 깎여요. 오차 3.4%면 96.6점이에요. 5라운드 점수의 합계(최대 500점)가 기록이고, 끝까지 해야 저장돼요.'
   };
   var AREA = {
     react:'#play-area', stop:'#play-area', sort:'#sort-area', mole:'#mole-area', dino:'#dino-area',
     typo:'#typo-area', shoot:'#shoot-area', rps:'#rps-area', catch:'#catch-area',
-    hold:'#hold-area', catch_hard:'#catch-area', stairs:'#stair-area', memory:'#mem-area'
+    hold:'#hold-area', catch_hard:'#catch-area', stairs:'#stair-area', memory:'#mem-area', length:'#len-area'
   };
-  var AREA_IDS = ['#play-area','#sort-area','#mole-area','#dino-area','#typo-area','#shoot-area','#rps-area','#catch-area','#hold-area','#stair-area','#mem-area'];
+  var AREA_IDS = ['#play-area','#sort-area','#mole-area','#dino-area','#typo-area','#shoot-area','#rps-area','#catch-area','#hold-area','#stair-area','#mem-area','#len-area'];
 
   function stopCurrent(reason){
     if (S.running) sortEnd(reason);
@@ -923,6 +943,7 @@ h2{font-size:17px;margin:0 0 12px}
     if (KS && KS.running) stairsEnd(reason);
     if (HD && HD.running) hdEnd(reason);
     if (MEM && MEM.running) memEnd(reason);
+    if (LEN && LEN.running) lenEnd(reason);
   }
 
   function setMode(m){
@@ -962,6 +983,7 @@ h2{font-size:17px;margin:0 0 12px}
     if (mode === 'stairs') stairsIdle();
     if (mode === 'hold') hdIdle();
     if (mode === 'memory') memIdle();
+    if (mode === 'length') lenIdle();
   }
 
   /* ---------- 번개 터치, 10초 딱 ---------- */
@@ -1710,6 +1732,126 @@ h2{font-size:17px;margin:0 0 12px}
     }
   }
   $('#mem-start').addEventListener('click', memStart);
+
+  /* ---------- 눈대중 길이 ---------- */
+  // 점수는 10배 한 정수(0~5000)로 저장하고, 화면에는 소수 한 자리로 보여줘요.
+  var LEN = null, lenGen = 0;
+  function makeLEN(){ return { running:false, round:0, total10:0, phase:'idle', target:0, x0:0, pid:null, me:null }; }
+  LEN = makeLEN();
+  function lenHud(){
+    $('#len-round').textContent = LEN.round;
+    $('#len-total').textContent = (LEN.total10 / 10).toFixed(1);
+  }
+  function lenStageW(){ return $('#len-stage').getBoundingClientRect().width; }
+  function lenIdle(){
+    lenGen++;
+    LEN = makeLEN();
+    $('#len-stage').innerHTML = '';
+    lenHud();
+    $('#len-hint').textContent = '시작을 누르세요';
+    $('#len-start').disabled = false;
+    $('#len-start').textContent = '시작';
+    $('#len-msg').textContent = ''; $('#len-msg').className = 'saved';
+  }
+  function lenStart(){
+    if (LEN.running) return;
+    lenGen++;
+    LEN = makeLEN();
+    LEN.running = true;
+    $('#len-start').disabled = true;
+    $('#len-msg').textContent = ''; $('#len-msg').className = 'saved';
+    lenRound();
+  }
+  function lenLine(cls, left, width, top){
+    var d = document.createElement('div');
+    d.className = 'lenline ' + cls;
+    d.style.left = left + 'px'; d.style.width = width + 'px'; d.style.top = top + 'px';
+    $('#len-stage').appendChild(d);
+    return d;
+  }
+  function lenRound(){
+    var gen = lenGen;
+    LEN.round++; LEN.phase = 'show'; LEN.me = null;
+    lenHud();
+    var stage = $('#len-stage');
+    stage.innerHTML = '';
+    var W = lenStageW();
+    LEN.target = 0.25 + Math.random() * 0.65;           // 화면 너비 대비 길이 비율
+    var wpx = LEN.target * W;
+    var left = Math.random() * (W - wpx);
+    var tl = lenLine('', left, wpx, 125);
+    $('#len-hint').textContent = '잘 보세요!';
+    setTimeout(function(){
+      if (gen !== lenGen) return;
+      tl.remove();
+      LEN.phase = 'draw';
+      $('#len-hint').textContent = '같은 길이로 손가락을 끌어서 그리세요';
+    }, 1000);
+  }
+  function lenDown(e){
+    if (!LEN.running || LEN.phase !== 'draw') return;
+    var stage = $('#len-stage'), r = stage.getBoundingClientRect();
+    LEN.x0 = e.clientX - r.left; LEN.pid = e.pointerId; LEN.phase = 'drawing';
+    stage.setPointerCapture(e.pointerId);
+    if (LEN.me) LEN.me.remove();
+    LEN.me = lenLine('me', LEN.x0, 0, 125);
+    e.preventDefault();
+  }
+  function lenMove(e){
+    if (LEN.phase !== 'drawing' || e.pointerId !== LEN.pid) return;
+    var r = $('#len-stage').getBoundingClientRect(), W = r.width;
+    var x = Math.max(0, Math.min(W, e.clientX - r.left));
+    LEN.me.style.left = Math.min(x, LEN.x0) + 'px';
+    LEN.me.style.width = Math.abs(x - LEN.x0) + 'px';
+    LEN.x1 = x;
+  }
+  function lenUp(e){
+    if (LEN.phase !== 'drawing' || e.pointerId !== LEN.pid) return;
+    var gen = lenGen, W = lenStageW();
+    var drawn = Math.abs((LEN.x1 === undefined ? LEN.x0 : LEN.x1) - LEN.x0) / W;
+    LEN.x1 = undefined;
+    if (drawn < 0.02){                                   // 너무 짧으면 실수로 보고 다시 그리기
+      if (LEN.me) LEN.me.remove();
+      LEN.phase = 'draw';
+      $('#len-hint').textContent = '조금 더 길게 끌어서 그려 주세요';
+      return;
+    }
+    LEN.phase = 'wait';
+    var err10 = Math.round(Math.abs(drawn - LEN.target) / LEN.target * 1000);   // 오차율(%)을 10배 한 값
+    var sc10 = Math.max(0, 1000 - err10);
+    LEN.total10 += sc10;
+    lenHud();
+    var wpx = LEN.target * W;
+    lenLine('ans', (W - wpx) / 2, wpx, 150);
+    $('#len-hint').textContent = '오차 ' + (err10 / 10).toFixed(1) + '% → ' + (sc10 / 10).toFixed(1) + '점';
+    setTimeout(function(){
+      if (gen !== lenGen) return;
+      if (LEN.round >= 5) lenEnd('done'); else lenRound();
+    }, 1800);
+  }
+  function lenEnd(reason){
+    if (!LEN.running) return;
+    var finished = (reason === 'done');
+    LEN.running = false;
+    lenGen++;
+    $('#len-start').disabled = false;
+    $('#len-start').textContent = '다시 시작';
+    if (finished){
+      var total10 = LEN.total10;
+      $('#len-hint').textContent = '끝! 총점 ' + (total10 / 10).toFixed(1) + '점';
+      saveResult('length', total10, null, $('#len-msg'), '총점 ' + (total10 / 10).toFixed(1) + '점');
+    } else {
+      $('#len-hint').textContent = '게임을 나갔어요. (끝까지 해야 저장돼요)';
+    }
+  }
+  (function(){
+    var st = $('#len-stage');
+    st.addEventListener('pointerdown', lenDown);
+    st.addEventListener('pointermove', lenMove);
+    st.addEventListener('pointerup', lenUp);
+    st.addEventListener('pointercancel', lenUp);
+  })();
+  $('#len-start').addEventListener('click', lenStart);
 
   /* ---------- 하늘에서 쏟아진다 받아라 (캐치) ---------- */
   var catchHardOn = false;
