@@ -143,6 +143,18 @@ h2{font-size:17px;margin:0 0 12px}
 .lenline.me{background:var(--accent,#e4572e)}
 .lenline.ans{background:var(--ok)}
 
+/* 상점 · 출석 · 아이템 */
+.attrow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.attday{border:1px solid var(--line);border-radius:10px;padding:6px 2px;text-align:center;font-size:12px;display:flex;flex-direction:column;gap:2px}
+.attday.done{background:var(--ok,#2e9e5b);color:#fff;border-color:var(--ok,#2e9e5b)}
+.shop-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.shop-row{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px}
+.shop-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.shop-info span{font-size:13px;color:var(--muted)}
+.shop-info em{font-size:12px;font-style:normal;color:var(--muted)}
+.itemtog{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-size:14px}
+.itemtog.off{opacity:.5}
+
 /* 숨은 오타 */
 .tgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-top:12px}
 .cell{
@@ -363,6 +375,7 @@ h2{font-size:17px;margin:0 0 12px}
             <button class="sbtn" id="c-right" disabled>오른쪽 ▶</button>
           </div>
           <p class="s-hint" id="c-hint">⭐️ +2점 · 🌟 +5점 · 💣 -3점. 바구니는 화면을 끌거나 버튼으로 움직이세요.</p>
+          <label class="itemtog" data-item="wide_basket"><input type="checkbox"> 🎒 넓은 바구니 쓰기 (<b class="itemcnt">0</b>개)</label>
           <div class="row"><button class="btn primary" id="c-start">시작</button></div>
           <p class="saved" id="c-msg"></p>
         </div>
@@ -413,6 +426,7 @@ h2{font-size:17px;margin:0 0 12px}
           </div>
           <p class="s-hint" id="mem-hint">시작을 누르세요</p>
           <div class="memgrid" id="mem-grid"></div>
+          <label class="itemtog" data-item="heart_plus"><input type="checkbox"> 🎒 하트 +1 쓰기 (<b class="itemcnt">0</b>개)</label>
           <div class="row"><button class="btn primary" id="mem-start">시작</button></div>
           <p class="saved" id="mem-msg"></p>
         </div>
@@ -425,6 +439,7 @@ h2{font-size:17px;margin:0 0 12px}
           </div>
           <p class="s-hint" id="len-hint">시작을 누르세요</p>
           <div class="lenstage" id="len-stage"></div>
+          <label class="itemtog" data-item="view_time"><input type="checkbox"> 🎒 보는 시간 +0.5초 쓰기 (<b class="itemcnt">0</b>개)</label>
           <div class="row"><button class="btn primary" id="len-start">시작</button></div>
           <p class="saved" id="len-msg"></p>
         </div>
@@ -493,19 +508,18 @@ h2{font-size:17px;margin:0 0 12px}
 
     </div>
 
-    <div id="panel-chat" hidden style="display:flex;flex-direction:column;gap:12px">
-      <section class="card" aria-label="우리반 대화">
-        <h2>우리반 대화</h2>
-        <p class="s-hint" style="margin-top:0">우리 반 모두가 같이 보는 대화방이에요. 4초마다 새 메시지를 불러와요.</p>
-        <ul class="chat-list" id="chat-list" style="margin-top:12px"></ul>
-        <div class="chat-form">
-          <input id="chat-text" maxlength="200" placeholder="메시지를 입력하세요" autocomplete="off">
-          <button class="btn primary" id="chat-send">보내기</button>
-        </div>
-        <div class="row" style="justify-content:space-between;margin-top:6px">
-          <span class="saved" id="chat-msg"></span>
-          <span class="s-hint" id="chat-count" style="margin:0">0/200</span>
-        </div>
+    <div id="panel-shop" hidden style="display:flex;flex-direction:column;gap:12px">
+      <section class="card" aria-label="내 지갑">
+        <h2>내 지갑</h2>
+        <p style="margin:6px 0 0;font-size:22px;font-weight:800">🪙 <span id="shop-coins">0</span> 코인</p>
+        <div class="attrow" id="att-days"></div>
+        <p class="s-hint" id="att-hint"></p>
+      </section>
+      <section class="card" aria-label="상점">
+        <h2>상점</h2>
+        <p class="s-hint" style="margin-top:0">아이템은 게임을 시작하기 전에 켜 두면 그 한 판에만 쓰여요. 아이템을 쓴 판은 주간 리그에만 기록되고 전체 랭킹에는 들어가지 않아요.</p>
+        <ul class="shop-list" id="shop-list"></ul>
+        <span class="saved" id="shop-msg"></span>
       </section>
     </div>
   </div>
@@ -522,7 +536,7 @@ h2{font-size:17px;margin:0 0 12px}
 <nav class="bottom-nav" id="bottom-nav" hidden>
   <button class="nav-btn" data-panel="home" aria-selected="true">홈</button>
   <button class="nav-btn" data-panel="league" aria-selected="false">리그</button>
-  <button class="nav-btn" data-panel="chat" aria-selected="false">대화</button>
+  <button class="nav-btn" data-panel="shop" aria-selected="false">상점</button>
   <button class="nav-btn" data-panel="title" aria-selected="false">칭호</button>
 </nav>
 
@@ -672,14 +686,17 @@ h2{font-size:17px;margin:0 0 12px}
   }
 
   // 결과 자동 저장 (전체 기록 + 이번 주 리그)
-  function saveResult(m, score, elapsed, msgEl, prefix){
+  function saveResult(m, score, elapsed, msgEl, prefix, usedItem){
     noteEl(msgEl, '저장하는 중...', 'saved');
-    return db.rpc('save_result', { p_no: me.no, p_mode: m, p_score: score, p_elapsed: elapsed })
+    return db.rpc(usedItem ? 'save_result_item' : 'save_result', { p_no: me.no, p_mode: m, p_score: score, p_elapsed: elapsed })
       .then(function(r){
         if (r.error) throw r.error;
         return grantIds(recordTitles(m, score, elapsed));
       }).then(function(){
-        noteEl(msgEl, (prefix ? prefix + ' · ' : '') + '자동 저장됐어요 ✓', 'saved ok');
+        return claimAttendance();
+      }).then(function(att){
+        var done = usedItem ? '아이템 사용 · 리그에만 기록됐어요 ✓' : '자동 저장됐어요 ✓';
+        noteEl(msgEl, (prefix ? prefix + ' · ' : '') + done + (att ? ' · ' + att : ''), 'saved ok');
         return refreshAll();
       }).catch(function(e){
         noteEl(msgEl, '저장하지 못했어요: ' + errText(e), 'saved bad');
@@ -788,6 +805,7 @@ h2{font-size:17px;margin:0 0 12px}
     stopCurrent('quit');
     setSavedNo(null);
     me = null;
+    ECON = newEcon();
     showEntry();
   });
 
@@ -816,97 +834,112 @@ h2{font-size:17px;margin:0 0 12px}
     showPanel(panel);
     setMode(mode);
     refreshAll();
+    loadEcon();
   }
 
   /* ---------- 아래 탭 ---------- */
   function showPanel(p){
     stopCurrent('quit');
-    if (p !== 'chat') stopChat();
     panel = p;
     $('#panel-home').hidden = p !== 'home';
     $('#panel-league').hidden = p !== 'league';
     $('#panel-title').hidden = p !== 'title';
-    $('#panel-chat').hidden = p !== 'chat';
+    $('#panel-shop').hidden = p !== 'shop';
     document.querySelectorAll('[data-panel]').forEach(function(b){
       b.setAttribute('aria-selected', String(b.dataset.panel === p));
     });
     if (p === 'home'){ resetGame(); loadBoard(); }
     else if (p === 'league'){ loadLeague(); }
-    else if (p === 'chat'){ startChat(); }
+    else if (p === 'shop'){ loadEcon(); }
     else { loadTitles(); loadClassTitles(); }
   }
   document.querySelectorAll('[data-panel]').forEach(function(b){
     b.addEventListener('click', function(){ showPanel(b.dataset.panel); });
   });
 
-  /* ---------- 우리반 대화 ---------- */
-  var chatTimer = 0;
-  function chatTime(s){
-    var d = new Date(s), z = function(n){ return (n < 10 ? '0' : '') + n; };
-    return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + z(d.getHours()) + ':' + z(d.getMinutes());
+  /* ---------- 코인 · 상점 · 출석 ---------- */
+  function newEcon(){ return { coins:0, streak:0, claimedToday:false, inv:{}, shop:[], loaded:false }; }
+  var ECON = newEcon();
+  var ATT_COINS = [5, 5, 7, 5, 10];   // 연속 출석 1~5일차 보상 (Supabase 표와 같은 값)
+  var ITEM_DESC = {
+    heart_plus: '기억력 패턴을 하트 4개로 시작해요',
+    view_time: '눈대중 길이에서 선이 1.5초 동안 보여요',
+    wide_basket: '쏟아진다에서 바구니가 1.3배 넓어져요'
+  };
+  function loadEcon(){
+    if (!me) return Promise.resolve();
+    return db.rpc('get_me', { p_no: me.no }).then(function(r){
+      if (r.error || !r.data) throw (r.error || new Error('no data'));
+      var d = r.data;
+      ECON = { coins:d.coins, streak:d.streak, claimedToday:!!d.claimed_today, inv:d.inv || {}, shop:d.shop || [], loaded:true };
+      renderEcon();
+    }).catch(function(){ /* 상점 정보를 못 불러와도 게임은 계속 할 수 있어요 */ });
   }
-  function renderChat(rows){
-    var list = $('#chat-list');
-    var atBottom = list.scrollTop + list.clientHeight >= list.scrollHeight - 40;
-    list.innerHTML = '';
-    if (!rows.length){
-      var e = document.createElement('li');
-      e.className = 'chat-empty';
-      e.textContent = '아직 대화가 없어요. 첫 메시지를 보내 보세요!';
-      list.appendChild(e);
-    }
-    rows.forEach(function(r){
-      var li = document.createElement('li');
-      li.className = 'chat-row' + (me && r.no === me.no ? ' mine' : '');
-      var who = document.createElement('div');
-      who.className = 'chat-who';
-      who.textContent = r.name + ' · ' + chatTime(r.created_at);
-      var body = document.createElement('div');
-      body.className = 'chat-body';
-      body.textContent = r.body;
-      li.appendChild(who);
-      li.appendChild(body);
-      list.appendChild(li);
+  function renderEcon(){
+    $('#shop-coins').textContent = ECON.coins;
+    var cyc = (ECON.claimedToday && ECON.streak > 0) ? ((ECON.streak - 1) % 5) + 1 : 0;
+    var box = $('#att-days'); box.innerHTML = '';
+    ATT_COINS.forEach(function(c, i){
+      var d = document.createElement('div');
+      d.className = 'attday' + (i < cyc ? ' done' : '');
+      d.innerHTML = '<b>' + (i + 1) + '일차</b><span>+' + c + '</span>';
+      box.appendChild(d);
     });
-    if (atBottom) list.scrollTop = list.scrollHeight;
+    $('#att-hint').textContent = ECON.claimedToday
+      ? '오늘 출석 완료! 내일(평일)도 하면 다음 일차 보상을 받아요.'
+      : '오늘 한 판을 끝내면 출석 보상을 받아요. 평일만 세고, 하루 빠지면 1일차부터 다시 시작해요.';
+    var ul = $('#shop-list'); ul.innerHTML = '';
+    ECON.shop.forEach(function(it){
+      var li = document.createElement('li'); li.className = 'shop-row';
+      var info = document.createElement('div'); info.className = 'shop-info';
+      var nm = document.createElement('b'); nm.textContent = it.name;
+      var ds = document.createElement('span'); ds.textContent = ITEM_DESC[it.id] || '';
+      var own = document.createElement('em'); own.textContent = '보유 ' + (ECON.inv[it.id] || 0) + '개';
+      info.appendChild(nm); info.appendChild(ds); info.appendChild(own);
+      var btn = document.createElement('button'); btn.className = 'btn primary';
+      btn.textContent = '🪙 ' + it.price;
+      btn.disabled = ECON.coins < it.price;
+      btn.addEventListener('click', function(){ buyItem(it.id, btn); });
+      li.appendChild(info); li.appendChild(btn); ul.appendChild(li);
+    });
+    renderItems();
   }
-  function loadChat(){
-    if (!me) return;
-    db.from('class_chat').select('id,no,name,body,created_at').order('id', { ascending: false }).limit(100)
-      .then(function(r){
-        if (r.error){ noteEl($('#chat-msg'), '대화를 불러오지 못했어요. 잠시 후 다시 해 보세요', 'saved bad'); return; }
-        renderChat((r.data || []).slice().reverse());
-      });
+  function renderItems(){
+    document.querySelectorAll('.itemtog').forEach(function(lb){
+      var id = lb.dataset.item, n = ECON.inv[id] || 0, cb = lb.querySelector('input');
+      lb.querySelector('.itemcnt').textContent = n;
+      cb.disabled = n === 0;
+      if (n === 0) cb.checked = false;
+      lb.classList.toggle('off', n === 0);
+    });
   }
-  function startChat(){
-    stopChat();
-    loadChat();
-    chatTimer = setInterval(loadChat, 4000);
-  }
-  function stopChat(){
-    clearInterval(chatTimer);
-    chatTimer = 0;
-  }
-  function sendChat(){
-    if (!me) return;
-    var input = $('#chat-text');
-    var text = input.value.trim();
-    if (!text){ noteEl($('#chat-msg'), '메시지를 입력하세요', 'saved bad'); return; }
-    if (text.length > 200){ noteEl($('#chat-msg'), '200글자까지 보낼 수 있어요', 'saved bad'); return; }
-    var btn = $('#chat-send');
+  function buyItem(id, btn){
     btn.disabled = true;
-    db.from('class_chat').insert({ no: me.no, name: me.name, body: text }).then(function(r){
-      btn.disabled = false;
-      if (r.error){ noteEl($('#chat-msg'), '보내지 못했어요. 다시 해 보세요', 'saved bad'); return; }
-      input.value = '';
-      $('#chat-count').textContent = '0/200';
-      noteEl($('#chat-msg'), '', 'saved');
-      loadChat();
-    });
+    db.rpc('buy_item', { p_no: me.no, p_item: id }).then(function(r){
+      if (r.error) throw r.error;
+      if (!r.data.ok){ noteEl($('#shop-msg'), '코인이 부족해요', 'saved bad'); return; }
+      noteEl($('#shop-msg'), '구매했어요 ✓', 'saved ok');
+    }).catch(function(e){
+      noteEl($('#shop-msg'), '구매하지 못했어요: ' + errText(e), 'saved bad');
+    }).then(loadEcon);
   }
-  $('#chat-send').addEventListener('click', sendChat);
-  $('#chat-text').addEventListener('keydown', function(e){ if (e.key === 'Enter') sendChat(); });
-  $('#chat-text').addEventListener('input', function(){ $('#chat-count').textContent = this.value.length + '/200'; });
+  // 게임을 시작할 때 아이템 쓰기가 켜져 있으면 1개 쓰고 true 를 돌려줘요
+  function takeItem(id){
+    var cb = document.querySelector('.itemtog[data-item="' + id + '"] input');
+    if (!cb || !cb.checked || !me) return Promise.resolve(false);
+    return db.rpc('use_item', { p_no: me.no, p_item: id }).then(function(r){
+      var ok = !r.error && r.data && r.data.ok;
+      if (ok){ ECON.inv[id] = Math.max(0, (ECON.inv[id] || 0) - 1); cb.checked = false; renderEcon(); }
+      return !!ok;
+    }).catch(function(){ return false; });
+  }
+  function claimAttendance(){
+    return db.rpc('claim_attendance', { p_no: me.no }).then(function(r){
+      if (r.error || !r.data || r.data.status !== 'ok') return '';
+      loadEcon();
+      return '출석 ' + r.data.day + '일차! +' + r.data.coins + '코인';
+    }).catch(function(){ return ''; });
+  }
 
   /* ---------- 게임 고르기 ---------- */
   var RULE = {
@@ -1623,11 +1656,11 @@ h2{font-size:17px;margin:0 0 12px}
     var t = Math.min(1, (l - r[0]) / (r[1] - r[0]));
     return { n: r[2], lit: Math.round(r[3] + (r[4] - r[3]) * t) };
   }
-  function makeMEM(){ return { running:false, level:1, hearts:3, ans:[], found:[], phase:'idle' }; }
+  function makeMEM(){ return { running:false, starting:false, item:false, level:1, hearts:3, max:3, ans:[], found:[], phase:'idle' }; }
   MEM = makeMEM();
   function memHud(){
     $('#mem-level').textContent = MEM.level;
-    $('#mem-hearts').textContent = '❤️'.repeat(MEM.hearts) + '🖤'.repeat(3 - MEM.hearts);
+    $('#mem-hearts').textContent = '❤️'.repeat(MEM.hearts) + '🖤'.repeat(MEM.max - MEM.hearts);
   }
   function memBuild(n){
     var grid = $('#mem-grid');
@@ -1657,13 +1690,19 @@ h2{font-size:17px;margin:0 0 12px}
     $('#mem-msg').textContent = ''; $('#mem-msg').className = 'saved';
   }
   function memStart(){
-    if (MEM.running) return;
-    memGen++;
-    MEM = makeMEM();
-    MEM.running = true;
+    if (MEM.running || MEM.starting) return;
+    MEM.starting = true;
     $('#mem-start').disabled = true;
-    $('#mem-msg').textContent = ''; $('#mem-msg').className = 'saved';
-    memRound();
+    takeItem('heart_plus').then(function(used){
+      if (panel !== 'home' || mode !== 'memory') return;
+      memGen++;
+      MEM = makeMEM();
+      MEM.running = true;
+      if (used){ MEM.item = true; MEM.hearts = 4; MEM.max = 4; }
+      $('#mem-msg').textContent = used ? '아이템 사용 중: 이 판은 리그에만 기록돼요' : '';
+      $('#mem-msg').className = 'saved';
+      memRound();
+    });
   }
   function memRound(){
     var gen = memGen;
@@ -1728,7 +1767,7 @@ h2{font-size:17px;margin:0 0 12px}
     $('#mem-hint').textContent = reason === 'lose' ? '게임 끝!' : '게임을 나갔어요.';
     var prefix = (reason === 'lose' ? '게임 끝! ' : '게임을 나갔어요. ') + lv + '레벨';
     if (lv > 1 || reason === 'lose'){
-      saveResult('memory', lv, null, $('#mem-msg'), prefix);
+      saveResult('memory', lv, null, $('#mem-msg'), prefix, MEM.item);
     }
   }
   $('#mem-start').addEventListener('click', memStart);
@@ -1736,7 +1775,7 @@ h2{font-size:17px;margin:0 0 12px}
   /* ---------- 눈대중 길이 ---------- */
   // 점수는 10배 한 정수(0~5000)로 저장하고, 화면에는 소수 한 자리로 보여줘요.
   var LEN = null, lenGen = 0;
-  function makeLEN(){ return { running:false, round:0, total10:0, phase:'idle', target:0, x0:0, pid:null, me:null }; }
+  function makeLEN(){ return { running:false, starting:false, item:false, round:0, total10:0, phase:'idle', target:0, x0:0, pid:null, me:null }; }
   LEN = makeLEN();
   function lenHud(){
     $('#len-round').textContent = LEN.round;
@@ -1754,13 +1793,19 @@ h2{font-size:17px;margin:0 0 12px}
     $('#len-msg').textContent = ''; $('#len-msg').className = 'saved';
   }
   function lenStart(){
-    if (LEN.running) return;
-    lenGen++;
-    LEN = makeLEN();
-    LEN.running = true;
+    if (LEN.running || LEN.starting) return;
+    LEN.starting = true;
     $('#len-start').disabled = true;
-    $('#len-msg').textContent = ''; $('#len-msg').className = 'saved';
-    lenRound();
+    takeItem('view_time').then(function(used){
+      if (panel !== 'home' || mode !== 'length') return;
+      lenGen++;
+      LEN = makeLEN();
+      LEN.running = true;
+      LEN.item = !!used;
+      $('#len-msg').textContent = used ? '아이템 사용 중: 이 판은 리그에만 기록돼요' : '';
+      $('#len-msg').className = 'saved';
+      lenRound();
+    });
   }
   function lenLine(cls, left, width, top){
     var d = document.createElement('div');
@@ -1786,7 +1831,7 @@ h2{font-size:17px;margin:0 0 12px}
       tl.remove();
       LEN.phase = 'draw';
       $('#len-hint').textContent = '같은 길이로 손가락을 끌어서 그리세요';
-    }, 1000);
+    }, LEN.item ? 1500 : 1000);
   }
   function lenDown(e){
     if (!LEN.running || LEN.phase !== 'draw') return;
@@ -1839,7 +1884,7 @@ h2{font-size:17px;margin:0 0 12px}
     if (finished){
       var total10 = LEN.total10;
       $('#len-hint').textContent = '끝! 총점 ' + (total10 / 10).toFixed(1) + '점';
-      saveResult('length', total10, null, $('#len-msg'), '총점 ' + (total10 / 10).toFixed(1) + '점');
+      saveResult('length', total10, null, $('#len-msg'), '총점 ' + (total10 / 10).toFixed(1) + '점', LEN.item);
     } else {
       $('#len-hint').textContent = '게임을 나갔어요. (끝까지 해야 저장돼요)';
     }
@@ -1857,7 +1902,7 @@ h2{font-size:17px;margin:0 0 12px}
   var catchHardOn = false;
   var ccv = $('#c-canvas'), ccx = ccv.getContext('2d');
   function makeCT(){
-    return { running:false, score:0, left:30000, last:0, raf:0, items:[], bx:BW / 2, dir:0, spawnAt:0, mode:'catch' };
+    return { running:false, starting:false, item:false, bw:36, score:0, left:30000, last:0, raf:0, items:[], bx:BW / 2, dir:0, spawnAt:0, mode:'catch' };
   }
   CT = makeCT();
   function catchDraw(){
@@ -1866,7 +1911,7 @@ h2{font-size:17px;margin:0 0 12px}
     ccx.textAlign = 'center';
     ccx.textBaseline = 'middle';
     CT.items.forEach(function(it){ ccx.fillText(it.e, it.x, it.y); });
-    ccx.font = '40px sans-serif';
+    ccx.font = (CT.item ? '52px' : '40px') + ' sans-serif';
     ccx.fillText('🧺', CT.bx, BASKET_Y);
     ccx.textAlign = 'start';
   }
@@ -1883,16 +1928,24 @@ h2{font-size:17px;margin:0 0 12px}
     catchDraw();
   }
   function catchStart(){
-    if (CT.running) return;
-    catchIdle();
-    CT.running = true;
-    CT.last = performance.now();
-    CT.spawnAt = CT.last;
-    CT.mode = catchHardOn ? 'catch_hard' : 'catch';
+    if (CT.running || CT.starting) return;
+    CT.starting = true;
     $('#c-start').disabled = true;
-    $('#c-left').disabled = false;
-    $('#c-right').disabled = false;
-    CT.raf = requestAnimationFrame(catchLoop);
+    takeItem('wide_basket').then(function(used){
+      if (panel !== 'home' || mode !== 'catch') return;
+      catchIdle();
+      CT.running = true;
+      CT.item = !!used;
+      CT.bw = used ? 47 : 36;
+      CT.last = performance.now();
+      CT.spawnAt = CT.last;
+      CT.mode = catchHardOn ? 'catch_hard' : 'catch';
+      $('#c-start').disabled = true;
+      $('#c-left').disabled = false;
+      $('#c-right').disabled = false;
+      if (used) noteEl($('#c-msg'), '아이템 사용 중: 이 판은 리그에만 기록돼요', 'saved');
+      CT.raf = requestAnimationFrame(catchLoop);
+    });
   }
   function catchLoop(t){
     if (!CT.running) return;
@@ -1916,7 +1969,7 @@ h2{font-size:17px;margin:0 0 12px}
     }
     CT.items.forEach(function(it){
       it.y += it.v * f;
-      if (!it.gone && it.y + 14 >= BASKET_Y - 20 && it.y < BASKET_Y + 20 && Math.abs(it.x - CT.bx) <= 36){
+      if (!it.gone && it.y + 14 >= BASKET_Y - 20 && it.y < BASKET_Y + 20 && Math.abs(it.x - CT.bx) <= CT.bw){
         CT.score += it.pts;
         it.gone = true;
         noteEl($('#c-msg'), (it.pts > 0 ? '+' : '') + it.pts + '점', it.pts > 0 ? 'saved ok' : 'saved bad');
@@ -1940,7 +1993,7 @@ h2{font-size:17px;margin:0 0 12px}
     $('#c-start').textContent = '다시 시작';
     var head = reason === 'time' ? '시간 종료!' : '게임을 나갔어요.';
     if (CT.score !== 0 || reason !== 'quit'){
-      saveResult(CT.mode, CT.score, null, $('#c-msg'), head + ' ' + CT.score + '점');
+      saveResult(CT.mode, CT.score, null, $('#c-msg'), head + ' ' + CT.score + '점', CT.item);
     }
   }
   function catchPoint(e){ return canvasPoint(ccv, e, BW, BH); }
