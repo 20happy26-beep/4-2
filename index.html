@@ -154,6 +154,10 @@ h2{font-size:17px;margin:0 0 12px}
 .shop-info em{font-size:12px;font-style:normal;color:var(--muted)}
 .itemtog{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-size:14px}
 .itemtog.off{opacity:.5}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:12px;font-size:14px;max-width:90vw;z-index:50;box-shadow:0 4px 14px rgba(0,0,0,.3);text-align:center}
+.feedbar{padding:8px 12px;border-radius:12px;background:rgba(255,194,51,.18);font-size:13px;display:flex;flex-direction:column;gap:4px}
+.ginput{display:block;width:100%;padding:10px;margin:6px 0;border:1px solid var(--line);border-radius:10px;font:inherit;background:transparent;color:inherit}
+.guild-members{margin:6px 0 10px;padding-left:18px;font-size:14px}
 
 /* 숨은 오타 */
 .tgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:2px;margin-top:12px}
@@ -225,6 +229,7 @@ h2{font-size:17px;margin:0 0 12px}
 </style>
 </head>
 <body>
+<div id="toast" hidden role="status"></div>
 <div class="wrap">
 
   <header>
@@ -259,6 +264,7 @@ h2{font-size:17px;margin:0 0 12px}
 
     <!-- HOME -->
     <div id="panel-home" style="display:flex;flex-direction:column;gap:20px">
+      <div class="feedbar" id="feedbar" hidden></div>
 
       <section class="card" aria-label="게임">
         <div class="tabs" id="mode-tabs" role="tablist" style="margin-top:0"></div>
@@ -514,12 +520,24 @@ h2{font-size:17px;margin:0 0 12px}
         <p style="margin:6px 0 0;font-size:22px;font-weight:800">🪙 <span id="shop-coins">0</span> 코인</p>
         <div class="attrow" id="att-days"></div>
         <p class="s-hint" id="att-hint"></p>
+        <p class="s-hint" id="shop-league" hidden></p>
       </section>
       <section class="card" aria-label="상점">
         <h2>상점</h2>
         <p class="s-hint" style="margin-top:0">아이템은 게임을 시작하기 전에 켜 두면 그 한 판에만 쓰여요. 아이템을 쓴 판은 주간 리그에만 기록되고 전체 랭킹에는 들어가지 않아요.</p>
         <ul class="shop-list" id="shop-list"></ul>
         <span class="saved" id="shop-msg"></span>
+      </section>
+    </div>
+    <div id="panel-guild" hidden style="display:flex;flex-direction:column;gap:12px">
+      <section class="card" aria-label="내 길드">
+        <h2>내 길드</h2>
+        <div id="g-mine"></div>
+        <span class="saved" id="g-msg"></span>
+      </section>
+      <section class="card" aria-label="길드 목록">
+        <h2>길드 목록</h2>
+        <ul class="shop-list" id="g-list"></ul>
       </section>
     </div>
   </div>
@@ -536,6 +554,7 @@ h2{font-size:17px;margin:0 0 12px}
 <nav class="bottom-nav" id="bottom-nav" hidden>
   <button class="nav-btn" data-panel="home" aria-selected="true">홈</button>
   <button class="nav-btn" data-panel="league" aria-selected="false">리그</button>
+  <button class="nav-btn" data-panel="guild" aria-selected="false">길드</button>
   <button class="nav-btn" data-panel="shop" aria-selected="false">상점</button>
   <button class="nav-btn" data-panel="title" aria-selected="false">칭호</button>
 </nav>
@@ -695,9 +714,13 @@ h2{font-size:17px;margin:0 0 12px}
       }).then(function(){
         return claimAttendance();
       }).then(function(att){
-        var done = usedItem ? '아이템 사용 · 리그에만 기록됐어요 ✓' : '자동 저장됐어요 ✓';
-        noteEl(msgEl, (prefix ? prefix + ' · ' : '') + done + (att ? ' · ' + att : ''), 'saved ok');
-        return refreshAll();
+        return loadFeed(false).then(function(fresh){
+          var row = fresh.filter(function(f){ return f.no === me.no && f.mode === m; })[0];
+          var flag = row ? (row.kind === 'class_record' ? ' · 🏆 반 신기록!' : ' · 🎉 내 신기록!') : '';
+          var done = usedItem ? '아이템 사용 · 리그에만 기록됐어요 ✓' : '자동 저장됐어요 ✓';
+          noteEl(msgEl, (prefix ? prefix + ' · ' : '') + done + (att ? ' · ' + att : '') + flag, 'saved ok');
+          return refreshAll();
+        });
       }).catch(function(e){
         noteEl(msgEl, '저장하지 못했어요: ' + errText(e), 'saved bad');
       });
@@ -806,6 +829,7 @@ h2{font-size:17px;margin:0 0 12px}
     setSavedNo(null);
     me = null;
     ECON = newEcon();
+    resetFeed();
     showEntry();
   });
 
@@ -834,7 +858,9 @@ h2{font-size:17px;margin:0 0 12px}
     showPanel(panel);
     setMode(mode);
     refreshAll();
-    loadEcon();
+    loadEcon().then(claimLeague);
+    loadFeed(false);
+    startFeed();
   }
 
   /* ---------- 아래 탭 ---------- */
@@ -845,12 +871,14 @@ h2{font-size:17px;margin:0 0 12px}
     $('#panel-league').hidden = p !== 'league';
     $('#panel-title').hidden = p !== 'title';
     $('#panel-shop').hidden = p !== 'shop';
+    $('#panel-guild').hidden = p !== 'guild';
     document.querySelectorAll('[data-panel]').forEach(function(b){
       b.setAttribute('aria-selected', String(b.dataset.panel === p));
     });
     if (p === 'home'){ resetGame(); loadBoard(); }
     else if (p === 'league'){ loadLeague(); }
-    else if (p === 'shop'){ loadEcon(); }
+    else if (p === 'shop'){ loadEcon().then(claimLeague); }
+    else if (p === 'guild'){ loadGuilds(); }
     else { loadTitles(); loadClassTitles(); }
   }
   document.querySelectorAll('[data-panel]').forEach(function(b){
@@ -939,6 +967,196 @@ h2{font-size:17px;margin:0 0 12px}
       loadEcon();
       return '출석 ' + r.data.day + '일차! +' + r.data.coins + '코인';
     }).catch(function(){ return ''; });
+  }
+
+  /* ---------- 리그 보상 · 신기록 소식 · 길드 ---------- */
+  function gel(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  var toastTimer = null;
+  function showToast(text){
+    var t = $('#toast');
+    t.textContent = text; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.hidden = true; }, 4500);
+  }
+
+  // 지난주 리그 보상 (끝난 주를 접속할 때 한 번만 받아요)
+  function claimLeague(){
+    if (!me) return Promise.resolve();
+    return db.rpc('claim_league_rewards', { p_no: me.no }).then(function(r){
+      if (r.error || !r.data || !(r.data.total > 0)) return;
+      var c1 = 0, c2 = 0, c3 = 0, cp = 0;
+      (r.data.details || []).forEach(function(x){
+        if (x.rank === 1) c1++; else if (x.rank === 2) c2++; else if (x.rank === 3) c3++; else cp++;
+      });
+      var parts = [];
+      if (c1) parts.push('1위 ' + c1 + '번');
+      if (c2) parts.push('2위 ' + c2 + '번');
+      if (c3) parts.push('3위 ' + c3 + '번');
+      if (cp) parts.push('참가 ' + cp + '번');
+      var msg = '지난 리그 보상 +' + r.data.total + '코인 (' + parts.join(', ') + ')';
+      var p = $('#shop-league'); p.textContent = '🏅 ' + msg; p.hidden = false;
+      showToast('🏅 ' + msg);
+      return loadEcon();
+    }).catch(function(){});
+  }
+
+  // 신기록 소식
+  var feedMax = 0, feedLoaded = false, feedTimer = null;
+  function resetFeed(){
+    feedMax = 0; feedLoaded = false;
+    if (feedTimer){ clearInterval(feedTimer); feedTimer = null; }
+    $('#feedbar').hidden = true;
+  }
+  function feedLine(f){
+    var g = GAMES[f.mode];
+    if (!g) return '';
+    return '🏆 ' + (f.name || (f.no + '번')) + ' 님이 ' + g.label + ' 반 신기록! ' + fmt(f.mode, Number(f.score));
+  }
+  function renderFeed(list){
+    var bar = $('#feedbar'); bar.innerHTML = '';
+    var cut = Date.now() - 24 * 3600000, n = 0;
+    list.forEach(function(f){
+      if (f.kind !== 'class_record' || Number(f.at) < cut || n >= 3) return;
+      var line = feedLine(f);
+      if (!line) return;
+      bar.appendChild(gel('div', '', line)); n++;
+    });
+    bar.hidden = n === 0;
+  }
+  // 새로 생긴 소식들을 돌려줘요 (처음 불러올 때는 빈 목록)
+  function loadFeed(announce){
+    if (!me) return Promise.resolve([]);
+    return db.rpc('recent_feed', { p_no: me.no }).then(function(r){
+      if (r.error || !r.data) return [];
+      var list = r.data, prev = feedMax, first = !feedLoaded;
+      feedLoaded = true;
+      list.forEach(function(f){ if (f.id > feedMax) feedMax = f.id; });
+      renderFeed(list);
+      var fresh = first ? [] : list.filter(function(f){ return f.id > prev; });
+      if (announce){
+        var others = fresh.filter(function(f){ return f.kind === 'class_record' && f.no !== me.no; });
+        if (others.length) showToast(feedLine(others[0]));
+      }
+      return fresh;
+    }).catch(function(){ return []; });
+  }
+  function startFeed(){
+    if (feedTimer) clearInterval(feedTimer);
+    feedTimer = setInterval(function(){
+      if (me && !document.hidden && panel === 'home') loadFeed(true);
+    }, 30000);
+  }
+
+  // 길드
+  var GUILDS = [], GUILD_MAX = 4;
+  var GUILD_ERR = {
+    in_guild: '이미 길드에 들어가 있어요',
+    name_len: '길드 이름은 2~12글자로 지어 주세요',
+    descr_len: '설명은 40글자까지예요',
+    bad_text: '사용할 수 없는 말이 들어 있어요',
+    name_taken: '이미 있는 길드 이름이에요',
+    full: '길드가 가득 찼어요 (최대 4명)',
+    no_guild: '없어진 길드예요',
+    not_in: '길드에 들어가 있지 않아요',
+    not_leader: '길드장만 바꿀 수 있어요'
+  };
+  function myGuild(){
+    for (var i = 0; i < GUILDS.length; i++){
+      if (GUILDS[i].members.some(function(m){ return m.no === me.no; })) return GUILDS[i];
+    }
+    return null;
+  }
+  function loadGuilds(){
+    return db.rpc('list_guilds').then(function(r){
+      if (r.error) throw r.error;
+      GUILDS = r.data || [];
+      renderGuilds();
+    }).catch(function(e){
+      noteEl($('#g-msg'), '길드를 불러오지 못했어요: ' + errText(e), 'saved bad');
+    });
+  }
+  function guildCall(fn, args, okMsg){
+    return db.rpc(fn, args).then(function(r){
+      if (r.error) throw r.error;
+      var d = r.data || {};
+      if (!d.ok){
+        var msg = d.reason === 'cooldown'
+          ? '가입한 지 7일이 지나야 나갈 수 있어요 (' + fmtDay(Number(d.until) + 9 * 3600000) + ' 이후)'
+          : (GUILD_ERR[d.reason] || '처리하지 못했어요');
+        noteEl($('#g-msg'), msg, 'saved bad');
+        return;
+      }
+      noteEl($('#g-msg'), okMsg, 'saved ok');
+    }).catch(function(e){
+      noteEl($('#g-msg'), '처리하지 못했어요: ' + errText(e), 'saved bad');
+    }).then(loadGuilds);
+  }
+  function ginput(ph, max, val){
+    var i = document.createElement('input');
+    i.type = 'text'; i.placeholder = ph; i.maxLength = max; i.value = val || ''; i.className = 'ginput';
+    return i;
+  }
+  function renderGuilds(){
+    var mine = $('#g-mine'); mine.innerHTML = '';
+    var mg = myGuild();
+    if (mg){
+      mine.appendChild(gel('h3', '', mg.name));
+      mine.appendChild(gel('p', 's-hint', mg.descr || '설명이 없어요'));
+      var ul = gel('ul', 'guild-members');
+      mg.members.forEach(function(m){
+        ul.appendChild(gel('li', '', (m.no === mg.leader_no ? '👑 ' : '') + m.name + ' (' + m.no + '번)'));
+      });
+      mine.appendChild(ul);
+      if (mg.leader_no === me.no){
+        var n = ginput('길드 이름 (2~12자)', 12, mg.name), d = ginput('설명 (40자까지)', 40, mg.descr);
+        var sb = gel('button', 'btn primary', '이름·설명 저장');
+        sb.addEventListener('click', function(){
+          guildCall('update_guild', { p_no: me.no, p_name: n.value, p_descr: d.value }, '저장했어요 ✓');
+        });
+        mine.appendChild(n); mine.appendChild(d); mine.appendChild(sb);
+      }
+      var lb = gel('button', 'btn', '길드 나가기');
+      lb.style.marginTop = '10px';
+      lb.addEventListener('click', function(){
+        if (confirm('정말 길드에서 나갈까요?')) guildCall('leave_guild', { p_no: me.no }, '길드에서 나왔어요');
+      });
+      mine.appendChild(lb);
+    } else {
+      mine.appendChild(gel('p', 's-hint', '아직 길드가 없어요. 아래 목록에서 가입하거나 직접 만들어 보세요. (길드당 최대 ' + GUILD_MAX + '명)'));
+      var n2 = ginput('길드 이름 (2~12자)', 12, ''), d2 = ginput('설명 (40자까지)', 40, '');
+      var cb = gel('button', 'btn primary', '길드 만들기');
+      cb.addEventListener('click', function(){
+        guildCall('create_guild', { p_no: me.no, p_name: n2.value, p_descr: d2.value }, '길드를 만들었어요 ✓');
+      });
+      mine.appendChild(n2); mine.appendChild(d2); mine.appendChild(cb);
+    }
+    var list = $('#g-list'); list.innerHTML = '';
+    if (!GUILDS.length){
+      list.appendChild(gel('li', 's-hint', '아직 만들어진 길드가 없어요. 첫 길드를 만들어 보세요!'));
+    }
+    GUILDS.forEach(function(g){
+      var li = gel('li', 'shop-row');
+      var info = gel('div', 'shop-info');
+      info.appendChild(gel('b', '', g.name + ' (' + g.members.length + '/' + GUILD_MAX + ')'));
+      info.appendChild(gel('span', '', g.descr || ''));
+      info.appendChild(gel('em', '', g.members.map(function(m){ return m.name; }).join(', ')));
+      li.appendChild(info);
+      if (!mg){
+        var jb = gel('button', 'btn primary', g.members.length >= GUILD_MAX ? '가득 참' : '가입');
+        jb.disabled = g.members.length >= GUILD_MAX;
+        jb.addEventListener('click', function(){
+          jb.disabled = true;
+          guildCall('join_guild', { p_no: me.no, p_guild: g.id }, '가입했어요 ✓');
+        });
+        li.appendChild(jb);
+      }
+      list.appendChild(li);
+    });
   }
 
   /* ---------- 게임 고르기 ---------- */
