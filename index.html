@@ -154,6 +154,8 @@ h2{font-size:17px;margin:0 0 12px}
 .shop-info em{font-size:12px;font-style:normal;color:var(--muted)}
 .itemtog{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-size:14px}
 .itemtog.off{opacity:.5}
+.xpbar{height:10px;border-radius:5px;background:rgba(120,125,150,.3);overflow:hidden}
+.xpbar i{display:block;height:100%;width:0;background:var(--accent,#e4572e);border-radius:5px;transition:width .3s}
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:12px;font-size:14px;max-width:90vw;z-index:50;box-shadow:0 4px 14px rgba(0,0,0,.3);text-align:center}
 .feedbar{padding:8px 12px;border-radius:12px;background:rgba(255,194,51,.18);font-size:13px;display:flex;flex-direction:column;gap:4px}
 .ginput{display:block;width:100%;padding:10px;margin:6px 0;border:1px solid var(--line);border-radius:10px;font:inherit;background:transparent;color:inherit}
@@ -426,6 +428,7 @@ h2{font-size:17px;margin:0 0 12px}
 
         <!-- 기억력 패턴 -->
         <div id="mem-area" hidden>
+          <div class="tabs" id="mem-diff" style="margin-top:0"><button class="tab" data-diff="normal" aria-selected="true">일반</button><button class="tab" data-diff="hard" aria-selected="false">하드모드</button></div>
           <div class="g-status">
             <span>레벨 <b id="mem-level">1</b></span>
             <span id="mem-hearts">❤️❤️❤️</span>
@@ -518,6 +521,8 @@ h2{font-size:17px;margin:0 0 12px}
       <section class="card" aria-label="내 지갑">
         <h2>내 지갑</h2>
         <p style="margin:6px 0 0;font-size:22px;font-weight:800">🪙 <span id="shop-coins">0</span> 코인</p>
+        <p class="s-hint" id="shop-level" style="margin:10px 0 4px"></p>
+        <div class="xpbar"><i id="xp-fill"></i></div>
         <div class="attrow" id="att-days"></div>
         <p class="s-hint" id="att-hint"></p>
         <p class="s-hint" id="shop-league" hidden></p>
@@ -592,11 +597,12 @@ h2{font-size:17px;margin:0 0 12px}
     stairs:{ label:'무한 계단', high:true, unit:function(v){ return v + ' 계단'; } },
     catch_hard:{ label:'쏟아진다 하드모드', high:true, unit:function(v){ return v + ' 점'; } },
     memory:{ label:'기억력 패턴', high:true, unit:function(v){ return v + ' 레벨'; } },
-    length:{ label:'눈대중 길이', high:true, unit:function(v){ return (v / 10).toFixed(1) + ' 점'; } }
+    length:{ label:'눈대중 길이', high:true, unit:function(v){ return (v / 10).toFixed(1) + ' 점'; } },
+    memory_hard:{ label:'기억력 하드모드', high:true, unit:function(v){ return v + ' 레벨'; } }
   };
-  var MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','catch_hard','memory','length'];
+  var MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','catch_hard','memory','length','memory_hard'];
   var PLAY_MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','memory','length'];
-  var LB_MODES = MODES.filter(function(m){ return m !== 'catch_hard'; });
+  var LB_MODES = MODES.filter(function(m){ return m !== 'catch_hard' && m !== 'memory_hard'; });
   function isHigh(m){ return GAMES[m].high; }
   function fmt(m, v){ return GAMES[m].unit(v); }
 
@@ -719,6 +725,8 @@ h2{font-size:17px;margin:0 0 12px}
           var flag = row ? (row.kind === 'class_record' ? ' · 🏆 반 신기록!' : ' · 🎉 내 신기록!') : '';
           var done = usedItem ? '아이템 사용 · 리그에만 기록됐어요 ✓' : '자동 저장됐어요 ✓';
           noteEl(msgEl, (prefix ? prefix + ' · ' : '') + done + (att ? ' · ' + att : '') + flag, 'saved ok');
+          loadEcon();
+          loadLevels();
           return refreshAll();
         });
       }).catch(function(e){
@@ -775,12 +783,16 @@ h2{font-size:17px;margin:0 0 12px}
     });
   }
   buildTabs($('#mode-tabs'), 'mode', function(m){ setMode(m); }, PLAY_MODES);
+  var HARD_OF = { catch:'catch_hard', memory:'memory_hard' };
+  var BASE_OF = { catch_hard:'catch', memory_hard:'memory' };
   function syncSub(tabsId, attr, subId, cur){
-    var base = cur === 'catch_hard' ? 'catch' : cur;
+    var base = BASE_OF[cur] || cur;
     selectTab($(tabsId), attr, base);
     var box = $(subId);
-    box.hidden = base !== 'catch';
-    box.querySelectorAll('.tab').forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.sub === cur)); });
+    box.hidden = !HARD_OF[base];
+    var bs = box.querySelectorAll('.tab');
+    if (HARD_OF[base]){ bs[0].dataset.sub = base; bs[1].dataset.sub = HARD_OF[base]; }
+    bs.forEach(function(b){ b.setAttribute('aria-selected', String(b.dataset.sub === cur)); });
   }
   buildTabs($('#lb-tabs'), 'lb', function(m){ lbMode = m; syncSub('#lb-tabs', 'lb', '#lb-sub', lbMode); loadBoard(); }, LB_MODES);
   $('#lb-sub').addEventListener('click', function(e){
@@ -854,13 +866,14 @@ h2{font-size:17px;margin:0 0 12px}
     $('#entry').hidden = true;
     $('#main').hidden = false;
     $('#bottom-nav').hidden = false;
-    $('#me').textContent = (me.title ? me.title + ' ' : '') + me.no + '번 ' + honor(me);
+    setMeText();
     showPanel(panel);
     setMode(mode);
     refreshAll();
     loadEcon().then(claimLeague);
     loadFeed(false);
     startFeed();
+    loadLevels().then(function(){ if (panel === 'home') loadBoard(); });
   }
 
   /* ---------- 아래 탭 ---------- */
@@ -886,8 +899,20 @@ h2{font-size:17px;margin:0 0 12px}
   });
 
   /* ---------- 코인 · 상점 · 출석 ---------- */
-  function newEcon(){ return { coins:0, streak:0, claimedToday:false, inv:{}, shop:[], loaded:false }; }
+  function newEcon(){ return { coins:0, streak:0, claimedToday:false, inv:{}, shop:[], loaded:false, xp:0, level:1, lvFrom:0, lvTo:100 }; }
   var ECON = newEcon();
+  function setMeText(){
+    if (!me) return;
+    $('#me').textContent = (me.title ? me.title + ' ' : '') + me.no + '번 ' + honor(me) + (ECON.loaded ? ' · Lv.' + ECON.level : '');
+  }
+  // 모두의 레벨 (순위 화면에서 번호 옆에 보여줘요)
+  var LEVELS = {};
+  function lvTxt(no){ return LEVELS[no] ? ' · Lv.' + LEVELS[no] : ''; }
+  function loadLevels(){
+    return db.rpc('get_levels').then(function(r){
+      if (!r.error && r.data){ LEVELS = r.data; }
+    }).catch(function(){});
+  }
   var ATT_COINS = [5, 5, 7, 5, 10];   // 연속 출석 1~5일차 보상 (Supabase 표와 같은 값)
   var ITEM_DESC = {
     heart_plus: '기억력 패턴을 하트 4개로 시작해요',
@@ -899,12 +924,21 @@ h2{font-size:17px;margin:0 0 12px}
     return db.rpc('get_me', { p_no: me.no }).then(function(r){
       if (r.error || !r.data) throw (r.error || new Error('no data'));
       var d = r.data;
-      ECON = { coins:d.coins, streak:d.streak, claimedToday:!!d.claimed_today, inv:d.inv || {}, shop:d.shop || [], loaded:true };
+      var before = ECON.loaded ? ECON.level : null;
+      ECON = { coins:d.coins, streak:d.streak, claimedToday:!!d.claimed_today, inv:d.inv || {}, shop:d.shop || [], loaded:true,
+               xp:d.xp || 0, level:d.level || 1, lvFrom:d.lv_from || 0, lvTo:d.lv_to || 100 };
       renderEcon();
+      if (before !== null && ECON.level > before){
+        showToast('🎉 레벨 업! Lv.' + ECON.level + ' (+' + (10 * (ECON.level - before)) + '코인)');
+      }
     }).catch(function(){ /* 상점 정보를 못 불러와도 게임은 계속 할 수 있어요 */ });
   }
   function renderEcon(){
     $('#shop-coins').textContent = ECON.coins;
+    $('#shop-level').textContent = 'Lv.' + ECON.level + ' · 경험치 ' + ECON.xp + ' / ' + ECON.lvTo;
+    var span = Math.max(1, ECON.lvTo - ECON.lvFrom);
+    $('#xp-fill').style.width = Math.max(0, Math.min(100, (ECON.xp - ECON.lvFrom) / span * 100)) + '%';
+    setMeText();
     var cyc = (ECON.claimedToday && ECON.streak > 0) ? ((ECON.streak - 1) % 5) + 1 : 0;
     var box = $('#att-days'); box.innerHTML = '';
     ATT_COINS.forEach(function(c, i){
@@ -1174,12 +1208,13 @@ h2{font-size:17px;margin:0 0 12px}
     hold: '빨강 → 초록 → 노랑이 반복돼요. 초록불에 화면을 꾹 누르고 있던 시간을 모두 더해요(60초 동안). 노란불은 점수가 없어요. 빨간불에 누르거나, 누른 채로 빨간불이 되면 1초가 차감돼요. 추가 시간은 없어요.',
     catch_hard: '하드모드입니다. 아이템에 ⚠️ -5점, ⛔️ -10점, 🎁 +7점이 추가돼요. 제한 시간과 규칙은 일반 모드와 같아요.',
     memory: '잠깐 켜지는 칸을 잘 보고 기억하세요. 칸이 꺼지면 켜졌던 칸을 모두 누르면 되고, 순서는 상관없어요. 다 맞히면 다음 레벨로 올라가고 칸 수와 켜지는 칸이 늘어나요. 틀리면 하트가 하나 줄고 같은 레벨을 다시 해요. 하트 3개가 모두 없어지면 끝나고, 도달한 레벨이 기록이에요.',
-    length: '선이 1초 동안 보였다가 사라져요. 그 길이를 기억해서 손가락을 끌어 같은 길이로 그리세요. 한 판은 5라운드이고, 라운드마다 100점에서 오차율(%)만큼 깎여요. 오차 3.4%면 96.6점이에요. 5라운드 점수의 합계(최대 500점)가 기록이고, 끝까지 해야 저장돼요.'
+    length: '선이 1초 동안 보였다가 사라져요. 그 길이를 기억해서 손가락을 끌어 같은 길이로 그리세요. 한 판은 5라운드이고, 라운드마다 100점에서 오차율(%)만큼 깎여요. 오차 3.4%면 96.6점이에요. 5라운드 점수의 합계(최대 500점)가 기록이고, 끝까지 해야 저장돼요.',
+    memory_hard: '하드모드예요. 하트가 2개로 시작하고, 칸이 켜져 있는 시간이 더 짧아요. 칸 수도 더 빨리 늘어나요(3×3은 5레벨까지, 7×7은 36레벨부터). 순위는 일반 모드와 따로 매겨져요.'
   };
   var AREA = {
     react:'#play-area', stop:'#play-area', sort:'#sort-area', mole:'#mole-area', dino:'#dino-area',
     typo:'#typo-area', shoot:'#shoot-area', rps:'#rps-area', catch:'#catch-area',
-    hold:'#hold-area', catch_hard:'#catch-area', stairs:'#stair-area', memory:'#mem-area', length:'#len-area'
+    hold:'#hold-area', catch_hard:'#catch-area', stairs:'#stair-area', memory:'#mem-area', length:'#len-area', memory_hard:'#mem-area'
   };
   var AREA_IDS = ['#play-area','#sort-area','#mole-area','#dino-area','#typo-area','#shoot-area','#rps-area','#catch-area','#hold-area','#stair-area','#mem-area','#len-area'];
 
@@ -1867,14 +1902,17 @@ h2{font-size:17px;margin:0 0 12px}
   /* ---------- 기억력 패턴 ---------- */
   // [시작레벨, 끝레벨, 격자 크기, 켜지는 칸 시작값, 끝값]
   var MEM_RANGES = [[1,10,3,3,5],[11,20,4,5,8],[21,35,5,8,12],[36,50,6,12,16],[51,100,7,16,22]];
+  var MEM_RANGES_HARD = [[1,5,3,3,5],[6,10,4,5,8],[11,20,5,8,12],[21,35,6,12,16],[36,60,7,16,22]];
+  var memHardOn = false;
   var MEM = null, memEls = [], memGen = 0;
   function memSpec(l){
-    var r = MEM_RANGES[MEM_RANGES.length - 1];
-    for (var k = 0; k < MEM_RANGES.length; k++){ if (l <= MEM_RANGES[k][1]){ r = MEM_RANGES[k]; break; } }
+    var R = (MEM && MEM.hard) ? MEM_RANGES_HARD : MEM_RANGES;
+    var r = R[R.length - 1];
+    for (var k = 0; k < R.length; k++){ if (l <= R[k][1]){ r = R[k]; break; } }
     var t = Math.min(1, (l - r[0]) / (r[1] - r[0]));
     return { n: r[2], lit: Math.round(r[3] + (r[4] - r[3]) * t) };
   }
-  function makeMEM(){ return { running:false, starting:false, item:false, level:1, hearts:3, max:3, ans:[], found:[], phase:'idle' }; }
+  function makeMEM(){ return { running:false, starting:false, item:false, hard:false, level:1, hearts:3, max:3, ans:[], found:[], phase:'idle' }; }
   MEM = makeMEM();
   function memHud(){
     $('#mem-level').textContent = MEM.level;
@@ -1906,6 +1944,7 @@ h2{font-size:17px;margin:0 0 12px}
     $('#mem-start').disabled = false;
     $('#mem-start').textContent = '시작';
     $('#mem-msg').textContent = ''; $('#mem-msg').className = 'saved';
+    $('#rule').textContent = memHardOn ? RULE.memory_hard : RULE.memory;
   }
   function memStart(){
     if (MEM.running || MEM.starting) return;
@@ -1916,7 +1955,9 @@ h2{font-size:17px;margin:0 0 12px}
       memGen++;
       MEM = makeMEM();
       MEM.running = true;
-      if (used){ MEM.item = true; MEM.hearts = 4; MEM.max = 4; }
+      MEM.hard = memHardOn;
+      MEM.hearts = MEM.max = memHardOn ? 2 : 3;
+      if (used){ MEM.item = true; MEM.hearts++; MEM.max++; }
       $('#mem-msg').textContent = used ? '아이템 사용 중: 이 판은 리그에만 기록돼요' : '';
       $('#mem-msg').className = 'saved';
       memRound();
@@ -1941,8 +1982,8 @@ h2{font-size:17px;margin:0 0 12px}
         ans.forEach(function(i){ memEls[i].classList.remove('lit'); });
         MEM.phase = 'input';
         $('#mem-hint').textContent = '켜졌던 칸을 모두 누르세요';
-      }, 900 + sp.lit * 70);
-    }, 700);
+      }, MEM.hard ? 600 + sp.lit * 45 : 900 + sp.lit * 70);
+    }, MEM.hard ? 500 : 700);
   }
   function memTap(i){
     if (!MEM.running || MEM.phase !== 'input') return;
@@ -1985,10 +2026,21 @@ h2{font-size:17px;margin:0 0 12px}
     $('#mem-hint').textContent = reason === 'lose' ? '게임 끝!' : '게임을 나갔어요.';
     var prefix = (reason === 'lose' ? '게임 끝! ' : '게임을 나갔어요. ') + lv + '레벨';
     if (lv > 1 || reason === 'lose'){
-      saveResult('memory', lv, null, $('#mem-msg'), prefix, MEM.item);
+      saveResult(MEM.hard ? 'memory_hard' : 'memory', lv, null, $('#mem-msg'), prefix, MEM.item);
     }
   }
   $('#mem-start').addEventListener('click', memStart);
+  function memSetDiff(hard){
+    if (MEM.running || MEM.starting) return;
+    memHardOn = hard;
+    document.querySelectorAll('#mem-diff .tab').forEach(function(b){
+      b.setAttribute('aria-selected', String((b.dataset.diff === 'hard') === hard));
+    });
+    $('#rule').textContent = hard ? RULE.memory_hard : RULE.memory;
+  }
+  document.querySelectorAll('#mem-diff .tab').forEach(function(b){
+    b.addEventListener('click', function(){ memSetDiff(b.dataset.diff === 'hard'); });
+  });
 
   /* ---------- 눈대중 길이 ---------- */
   // 점수는 10배 한 정수(0~5000)로 저장하고, 화면에는 소수 한 자리로 보여줘요.
@@ -2530,7 +2582,7 @@ h2{font-size:17px;margin:0 0 12px}
         div.appendChild(medal);
         if (r){
           var n = document.createElement('div'); n.className = 'pname'; n.textContent = r.name;
-          var no = document.createElement('div'); no.className = 'pno'; no.textContent = r.no + '번';
+          var no = document.createElement('div'); no.className = 'pno'; no.textContent = r.no + '번' + lvTxt(r.no);
           var s = document.createElement('div'); s.className = 'pscore'; s.textContent = fmt(lbMode, r.score);
           div.appendChild(n); div.appendChild(no); div.appendChild(s);
         } else {
@@ -2544,7 +2596,7 @@ h2{font-size:17px;margin:0 0 12px}
       var li = document.createElement('li');
       var rank = document.createElement('span'); rank.className = 'rank'; rank.textContent = (i + 4) + '위';
       var who = document.createElement('div'); who.className = 'who'; who.textContent = r.name;
-      var small = document.createElement('small'); small.textContent = r.no + '번';
+      var small = document.createElement('small'); small.textContent = r.no + '번' + lvTxt(r.no);
       who.appendChild(small);
       var sc = document.createElement('span'); sc.className = 'score'; sc.textContent = fmt(lbMode, r.score);
       li.appendChild(rank); li.appendChild(who); li.appendChild(sc);
@@ -2593,7 +2645,7 @@ h2{font-size:17px;margin:0 0 12px}
       var li = document.createElement('li');
       var rank = document.createElement('span'); rank.className = 'rank'; rank.textContent = (i + 1) + '위';
       var who = document.createElement('div'); who.className = 'who'; who.textContent = r.name;
-      var small = document.createElement('small'); small.textContent = r.no + '번';
+      var small = document.createElement('small'); small.textContent = r.no + '번' + lvTxt(r.no);
       who.appendChild(small);
       var sc = document.createElement('span'); sc.className = 'score'; sc.textContent = fmt(m, r.best);
       li.appendChild(rank); li.appendChild(who); li.appendChild(sc);
@@ -2833,7 +2885,7 @@ h2{font-size:17px;margin:0 0 12px}
   function refreshAll(){
     if (!me) return Promise.resolve();
     return loadEquipped().then(function(){
-      $('#me').textContent = (me.title ? me.title + ' ' : '') + me.no + '번 ' + honor(me);
+      setMeText();
       return evaluateLeagueTitles().catch(function(){});
     }).then(function(){
       if (panel === 'title'){ return loadTitles().then(loadClassTitles); }
