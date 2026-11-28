@@ -154,6 +154,13 @@ h2{font-size:17px;margin:0 0 12px}
 .shop-info em{font-size:12px;font-style:normal;color:var(--muted)}
 .itemtog{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;font-size:14px}
 .itemtog.off{opacity:.5}
+.g48board{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;max-width:420px;margin:12px auto 0;aspect-ratio:1;padding:8px;border-radius:14px;background:rgba(120,125,150,.35);touch-action:none;user-select:none;-webkit-user-select:none}
+.g48t{display:flex;align-items:center;justify-content:center;border-radius:10px;font-weight:800;font-size:clamp(18px,7vw,32px)}
+.ach-group{border-top:1px solid var(--line);padding:6px 0}
+.ach-group>summary{cursor:pointer;font-weight:700;padding:8px 0}
+.ach-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;opacity:.6}
+.ach-row.done{opacity:1}
+.ach-row .ach-xp{font-size:13px;white-space:nowrap}
 .xpbar{height:10px;border-radius:5px;background:rgba(120,125,150,.3);overflow:hidden}
 .xpbar i{display:block;height:100%;width:0;background:var(--accent,#e4572e);border-radius:5px;transition:width .3s}
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);background:#222;color:#fff;padding:10px 14px;border-radius:12px;font-size:14px;max-width:90vw;z-index:50;box-shadow:0 4px 14px rgba(0,0,0,.3);text-align:center}
@@ -453,6 +460,18 @@ h2{font-size:17px;margin:0 0 12px}
           <p class="saved" id="len-msg"></p>
         </div>
 
+        <!-- 2048 -->
+        <div id="g48-area" hidden>
+          <div class="g-status">
+            <span>점수 <b id="g48-score">0</b></span>
+            <span>최고 타일 <b id="g48-max">2</b></span>
+          </div>
+          <p class="s-hint" id="g48-hint">시작을 누르세요</p>
+          <div class="g48board" id="g48-board"></div>
+          <div class="row"><button class="btn primary" id="g48-start">시작</button><button class="btn" id="g48-end">끝내기</button></div>
+          <p class="saved" id="g48-msg"></p>
+        </div>
+
       </section>
 
       <section class="card" aria-label="전체 순위">
@@ -502,6 +521,12 @@ h2{font-size:17px;margin:0 0 12px}
 
     <!-- TITLE -->
     <div id="panel-title" hidden style="display:flex;flex-direction:column;gap:20px">
+      <section class="card" aria-label="업적">
+        <h2>업적</h2>
+        <p class="s-hint" id="ach-sum" style="margin-top:0"></p>
+        <div id="ach-list"></div>
+      </section>
+
       <section class="card" aria-label="내 칭호">
         <h2>내 칭호</h2>
         <p class="rule" id="title-now"></p>
@@ -561,7 +586,7 @@ h2{font-size:17px;margin:0 0 12px}
   <button class="nav-btn" data-panel="league" aria-selected="false">리그</button>
   <button class="nav-btn" data-panel="guild" aria-selected="false">길드</button>
   <button class="nav-btn" data-panel="shop" aria-selected="false">상점</button>
-  <button class="nav-btn" data-panel="title" aria-selected="false">칭호</button>
+  <button class="nav-btn" data-panel="title" aria-selected="false">업적</button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -598,10 +623,11 @@ h2{font-size:17px;margin:0 0 12px}
     catch_hard:{ label:'쏟아진다 하드모드', high:true, unit:function(v){ return v + ' 점'; } },
     memory:{ label:'기억력 패턴', high:true, unit:function(v){ return v + ' 레벨'; } },
     length:{ label:'눈대중 길이', high:true, unit:function(v){ return (v / 10).toFixed(1) + ' 점'; } },
-    memory_hard:{ label:'기억력 하드모드', high:true, unit:function(v){ return v + ' 레벨'; } }
+    memory_hard:{ label:'기억력 하드모드', high:true, unit:function(v){ return v + ' 레벨'; } },
+    g2048:{ label:'2048', high:true, unit:function(v){ return v + ' 점'; } }
   };
-  var MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','catch_hard','memory','length','memory_hard'];
-  var PLAY_MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','memory','length'];
+  var MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','catch_hard','memory','length','memory_hard','g2048'];
+  var PLAY_MODES = ['react','stop','sort','mole','dino','typo','shoot','rps','catch','hold','stairs','memory','length','g2048'];
   var LB_MODES = MODES.filter(function(m){ return m !== 'catch_hard' && m !== 'memory_hard'; });
   function isHigh(m){ return GAMES[m].high; }
   function fmt(m, v){ return GAMES[m].unit(v); }
@@ -725,9 +751,8 @@ h2{font-size:17px;margin:0 0 12px}
           var flag = row ? (row.kind === 'class_record' ? ' · 🏆 반 신기록!' : ' · 🎉 내 신기록!') : '';
           var done = usedItem ? '아이템 사용 · 리그에만 기록됐어요 ✓' : '자동 저장됐어요 ✓';
           noteEl(msgEl, (prefix ? prefix + ' · ' : '') + done + (att ? ' · ' + att : '') + flag, 'saved ok');
-          loadEcon();
           loadLevels();
-          return refreshAll();
+          return checkAch().then(function(){ loadEcon(); return refreshAll(); });
         });
       }).catch(function(e){
         noteEl(msgEl, '저장하지 못했어요: ' + errText(e), 'saved bad');
@@ -870,7 +895,7 @@ h2{font-size:17px;margin:0 0 12px}
     showPanel(panel);
     setMode(mode);
     refreshAll();
-    loadEcon().then(claimLeague);
+    loadEcon().then(claimLeague).then(checkAch);
     loadFeed(false);
     startFeed();
     loadLevels().then(function(){ if (panel === 'home') loadBoard(); });
@@ -892,7 +917,7 @@ h2{font-size:17px;margin:0 0 12px}
     else if (p === 'league'){ loadLeague(); }
     else if (p === 'shop'){ loadEcon().then(claimLeague); }
     else if (p === 'guild'){ loadGuilds(); }
-    else { loadTitles(); loadClassTitles(); }
+    else { loadTitles(); loadClassTitles(); loadAch(); }
   }
   document.querySelectorAll('[data-panel]').forEach(function(b){
     b.addEventListener('click', function(){ showPanel(b.dataset.panel); });
@@ -983,7 +1008,7 @@ h2{font-size:17px;margin:0 0 12px}
       noteEl($('#shop-msg'), '구매했어요 ✓', 'saved ok');
     }).catch(function(e){
       noteEl($('#shop-msg'), '구매하지 못했어요: ' + errText(e), 'saved bad');
-    }).then(loadEcon);
+    }).then(loadEcon).then(checkAch);
   }
   // 게임을 시작할 때 아이템 쓰기가 켜져 있으면 1개 쓰고 true 를 돌려줘요
   function takeItem(id){
@@ -1010,12 +1035,17 @@ h2{font-size:17px;margin:0 0 12px}
     if (text !== undefined) e.textContent = text;
     return e;
   }
-  var toastTimer = null;
+  var toastQ = [], toastBusy = false;
   function showToast(text){
+    toastQ.push(text);
+    if (!toastBusy) nextToast();
+  }
+  function nextToast(){
     var t = $('#toast');
-    t.textContent = text; t.hidden = false;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function(){ t.hidden = true; }, 4500);
+    if (!toastQ.length){ toastBusy = false; t.hidden = true; return; }
+    toastBusy = true;
+    t.textContent = toastQ.shift(); t.hidden = false;
+    setTimeout(nextToast, 3500);
   }
 
   // 지난주 리그 보상 (끝난 주를 접속할 때 한 번만 받아요)
@@ -1128,7 +1158,7 @@ h2{font-size:17px;margin:0 0 12px}
       noteEl($('#g-msg'), okMsg, 'saved ok');
     }).catch(function(e){
       noteEl($('#g-msg'), '처리하지 못했어요: ' + errText(e), 'saved bad');
-    }).then(loadGuilds);
+    }).then(loadGuilds).then(checkAch);
   }
   function ginput(ph, max, val){
     var i = document.createElement('input');
@@ -1193,6 +1223,178 @@ h2{font-size:17px;margin:0 0 12px}
     });
   }
 
+  /* ---------- 업적 ---------- */
+  var ACH = [];
+  var TIER_ICON = { 0:'🎖', 1:'⭐', 2:'⭐⭐', 3:'⭐⭐⭐', 4:'👑' };
+  function achFmt(a, v){
+    v = Number(v);
+    if (a.mode === 'hold') return (v / 1000).toFixed(1) + '초';
+    if (a.mode === 'length') return (v / 10).toFixed(1) + '점';
+    return String(Math.round(v));
+  }
+  function loadAch(){
+    if (!me) return Promise.resolve();
+    return db.rpc('my_achievements', { p_no: me.no }).then(function(r){
+      if (r.error || !r.data) throw (r.error || new Error('no data'));
+      ACH = r.data;
+      renderAch();
+    }).catch(function(){ $('#ach-sum').textContent = '업적을 불러오지 못했어요'; });
+  }
+  function renderAch(){
+    var box = $('#ach-list'); box.innerHTML = '';
+    var groups = {}, order = [], got = 0, xp = 0;
+    ACH.forEach(function(a){
+      var g = a.kind === 'score' ? ((GAMES[a.mode] && GAMES[a.mode].label) || a.mode) : '도전 · 성장';
+      if (!groups[g]){ groups[g] = []; order.push(g); }
+      groups[g].push(a);
+      if (a.earned){ got++; xp += a.xp; }
+    });
+    $('#ach-sum').textContent = '달성 ' + got + ' / ' + ACH.length + ' · 업적 경험치 ' + xp;
+    order.forEach(function(g){
+      var list = groups[g], n = list.filter(function(e){ return e.earned; }).length;
+      var d = document.createElement('details'); d.className = 'ach-group';
+      d.appendChild(gel('summary', '', g + ' (' + n + '/' + list.length + ')'));
+      list.forEach(function(a){
+        var row = gel('div', 'ach-row' + (a.earned ? ' done' : ''));
+        var info = gel('div', '');
+        info.appendChild(gel('b', '', (TIER_ICON[a.tier] || '') + ' ' + a.label + (a.earned ? ' ✓' : '')));
+        info.appendChild(gel('div', 's-hint', a.descr));
+        row.appendChild(info);
+        row.appendChild(gel('div', 'ach-xp', a.earned ? '+' + a.xp + 'XP'
+          : (a.kind === 'score' ? achFmt(a, a.cur) + ' / ' + achFmt(a, a.threshold) : Math.round(a.cur) + ' / ' + a.threshold)));
+        d.appendChild(row);
+      });
+      box.appendChild(d);
+    });
+  }
+  // 새로 달성한 업적 확인 (서버가 판정하고 경험치도 줘요)
+  function checkAch(){
+    if (!me) return Promise.resolve();
+    return db.rpc('check_achievements', { p_no: me.no }).then(function(r){
+      if (r.error || !r.data || !r.data.length) return;
+      var list = r.data, sum = 0;
+      list.forEach(function(a){ sum += a.xp || 0; });
+      if (list.length <= 3){
+        list.forEach(function(a){
+          showToast('🏅 업적 달성! ' + (TIER_ICON[a.tier] || '') + ' ' + a.label + (a.xp ? ' (+' + a.xp + 'XP)' : ''));
+        });
+      } else {
+        showToast('🏅 업적 ' + list.length + '개 달성! (+' + sum + 'XP)');
+      }
+      if (panel === 'title') loadAch();
+      return loadEcon();
+    }).catch(function(){});
+  }
+
+  /* ---------- 2048 ---------- */
+  var G48 = null;
+  var G48_COLORS = { 0:'rgba(255,255,255,.25)', 2:'#eee4da', 4:'#ede0c8', 8:'#f2b179', 16:'#f59563', 32:'#f67c5f', 64:'#f65e3b',
+                     128:'#edcf72', 256:'#edcc61', 512:'#edc850', 1024:'#edc53f', 2048:'#edc22e' };
+  function makeG48(){ return { running:false, board:[0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0], score:0 }; }
+  G48 = makeG48();
+  function g48Render(){
+    var box = $('#g48-board'); box.innerHTML = '';
+    G48.board.forEach(function(v){
+      var t = document.createElement('div'); t.className = 'g48t';
+      t.style.background = G48_COLORS[v] || '#3c3a32';
+      t.style.color = v <= 4 ? '#776e65' : '#fff';
+      if (v >= 1000) t.style.fontSize = 'clamp(14px,5.5vw,24px)';
+      t.textContent = v ? v : '';
+      box.appendChild(t);
+    });
+    $('#g48-score').textContent = G48.score;
+    $('#g48-max').textContent = Math.max.apply(null, G48.board) || 2;
+  }
+  function g48Spawn(){
+    var empty = [];
+    G48.board.forEach(function(v, i){ if (!v) empty.push(i); });
+    if (!empty.length) return;
+    G48.board[empty[Math.floor(Math.random() * empty.length)]] = Math.random() < 0.9 ? 2 : 4;
+  }
+  // 한 줄을 앞쪽으로 밀어서 합치기
+  function g48Slide(line){
+    var a = line.filter(function(v){ return v; }), out = [], gained = 0;
+    for (var i = 0; i < a.length; i++){
+      if (a[i] === a[i + 1]){ out.push(a[i] * 2); gained += a[i] * 2; i++; } else out.push(a[i]);
+    }
+    while (out.length < 4) out.push(0);
+    return { line: out, gained: gained };
+  }
+  function g48CanMove(){
+    var b = G48.board;
+    for (var i = 0; i < 16; i++){
+      if (!b[i]) return true;
+      var col = i % 4, row = Math.floor(i / 4);
+      if (col < 3 && b[i] === b[i + 1]) return true;
+      if (row < 3 && b[i] === b[i + 4]) return true;
+    }
+    return false;
+  }
+  function g48Move(dir){            // 0 왼쪽, 1 위, 2 오른쪽, 3 아래
+    if (!G48.running) return;
+    var b = G48.board, nb = b.slice(), gained = 0, changed = false;
+    for (var k = 0; k < 4; k++){
+      var idx = [];
+      for (var j = 0; j < 4; j++){
+        idx.push(dir === 0 ? k * 4 + j : dir === 2 ? k * 4 + (3 - j) : dir === 1 ? j * 4 + k : (3 - j) * 4 + k);
+      }
+      var res = g48Slide(idx.map(function(p){ return b[p]; }));
+      gained += res.gained;
+      idx.forEach(function(p, jj){ if (nb[p] !== res.line[jj]){ changed = true; nb[p] = res.line[jj]; } });
+    }
+    if (!changed) return;
+    G48.board = nb; G48.score += gained;
+    g48Spawn(); g48Render();
+    if (!g48CanMove()) g48End('over');
+  }
+  function g48Idle(){
+    G48 = makeG48(); g48Render();
+    $('#g48-hint').textContent = '시작을 누르세요';
+    $('#g48-start').disabled = false; $('#g48-start').textContent = '시작';
+    $('#g48-end').disabled = true;
+    $('#g48-msg').textContent = ''; $('#g48-msg').className = 'saved';
+  }
+  function g48Start(){
+    if (G48.running) return;
+    G48 = makeG48(); G48.running = true;
+    g48Spawn(); g48Spawn(); g48Render();
+    $('#g48-hint').textContent = '화면을 위·아래·옆으로 밀어서 같은 숫자를 합치세요';
+    $('#g48-start').disabled = true; $('#g48-end').disabled = false;
+    $('#g48-msg').textContent = ''; $('#g48-msg').className = 'saved';
+  }
+  function g48End(reason){
+    if (!G48.running) return;
+    G48.running = false;
+    var score = Math.min(G48.score, 99999);
+    $('#g48-start').disabled = false; $('#g48-start').textContent = '다시 시작';
+    $('#g48-end').disabled = true;
+    $('#g48-hint').textContent = reason === 'over' ? '더 움직일 수 없어요! 끝!' : '끝냈어요.';
+    if (score > 0) saveResult('g2048', score, null, $('#g48-msg'), '점수 ' + score + '점');
+  }
+  (function(){
+    var box = $('#g48-board'), sx = 0, sy = 0, active = false;
+    box.addEventListener('pointerdown', function(e){
+      sx = e.clientX; sy = e.clientY; active = true;
+      if (box.setPointerCapture) box.setPointerCapture(e.pointerId);
+    });
+    box.addEventListener('pointerup', function(e){
+      if (!active) return;
+      active = false;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+      if (Math.abs(dx) > Math.abs(dy)) g48Move(dx < 0 ? 0 : 2); else g48Move(dy < 0 ? 1 : 3);
+    });
+    box.addEventListener('pointercancel', function(){ active = false; });
+    document.addEventListener('keydown', function(e){
+      if (panel !== 'home' || mode !== 'g2048' || !G48.running) return;
+      var m = { ArrowLeft:0, ArrowUp:1, ArrowRight:2, ArrowDown:3 }[e.key];
+      if (m !== undefined){ e.preventDefault(); g48Move(m); }
+    });
+  })();
+  $('#g48-start').addEventListener('click', g48Start);
+  $('#g48-end').addEventListener('click', function(){ g48End('quit'); });
+  g48Idle();
+
   /* ---------- 게임 고르기 ---------- */
   var RULE = {
     react: '초록색으로 바뀌면 최대한 빨리 누르세요. 너무 빨리 누르면 실격입니다. 점수는 짧을수록 좋아요.',
@@ -1209,14 +1411,15 @@ h2{font-size:17px;margin:0 0 12px}
     catch_hard: '하드모드입니다. 아이템에 ⚠️ -5점, ⛔️ -10점, 🎁 +7점이 추가돼요. 제한 시간과 규칙은 일반 모드와 같아요.',
     memory: '잠깐 켜지는 칸을 잘 보고 기억하세요. 칸이 꺼지면 켜졌던 칸을 모두 누르면 되고, 순서는 상관없어요. 다 맞히면 다음 레벨로 올라가고 칸 수와 켜지는 칸이 늘어나요. 틀리면 하트가 하나 줄고 같은 레벨을 다시 해요. 하트 3개가 모두 없어지면 끝나고, 도달한 레벨이 기록이에요.',
     length: '선이 1초 동안 보였다가 사라져요. 그 길이를 기억해서 손가락을 끌어 같은 길이로 그리세요. 한 판은 5라운드이고, 라운드마다 100점에서 오차율(%)만큼 깎여요. 오차 3.4%면 96.6점이에요. 5라운드 점수의 합계(최대 500점)가 기록이고, 끝까지 해야 저장돼요.',
-    memory_hard: '하드모드예요. 하트가 2개로 시작하고, 칸이 켜져 있는 시간이 더 짧아요. 칸 수도 더 빨리 늘어나요(3×3은 5레벨까지, 7×7은 36레벨부터). 순위는 일반 모드와 따로 매겨져요.'
+    memory_hard: '하드모드예요. 하트가 2개로 시작하고, 칸이 켜져 있는 시간이 더 짧아요. 칸 수도 더 빨리 늘어나요(3×3은 5레벨까지, 7×7은 36레벨부터). 순위는 일반 모드와 따로 매겨져요.',
+    g2048: '같은 숫자 타일을 밀어서 합치세요. 합칠 때마다 합친 숫자만큼 점수를 얻어요. 더 이상 움직일 수 없으면 끝나고, 점수가 기록이에요(최대 99999점까지 기록돼요). 화면을 위·아래·옆으로 밀거나 키보드 화살표를 쓰세요.'
   };
   var AREA = {
     react:'#play-area', stop:'#play-area', sort:'#sort-area', mole:'#mole-area', dino:'#dino-area',
     typo:'#typo-area', shoot:'#shoot-area', rps:'#rps-area', catch:'#catch-area',
-    hold:'#hold-area', catch_hard:'#catch-area', stairs:'#stair-area', memory:'#mem-area', length:'#len-area', memory_hard:'#mem-area'
+    hold:'#hold-area', catch_hard:'#catch-area', stairs:'#stair-area', memory:'#mem-area', length:'#len-area', memory_hard:'#mem-area', g2048:'#g48-area'
   };
-  var AREA_IDS = ['#play-area','#sort-area','#mole-area','#dino-area','#typo-area','#shoot-area','#rps-area','#catch-area','#hold-area','#stair-area','#mem-area','#len-area'];
+  var AREA_IDS = ['#play-area','#sort-area','#mole-area','#dino-area','#typo-area','#shoot-area','#rps-area','#catch-area','#hold-area','#stair-area','#mem-area','#len-area','#g48-area'];
 
   function stopCurrent(reason){
     if (S.running) sortEnd(reason);
@@ -1230,6 +1433,7 @@ h2{font-size:17px;margin:0 0 12px}
     if (HD && HD.running) hdEnd(reason);
     if (MEM && MEM.running) memEnd(reason);
     if (LEN && LEN.running) lenEnd(reason);
+    if (G48 && G48.running) g48End(reason);
   }
 
   function setMode(m){
@@ -1270,6 +1474,7 @@ h2{font-size:17px;margin:0 0 12px}
     if (mode === 'hold') hdIdle();
     if (mode === 'memory') memIdle();
     if (mode === 'length') lenIdle();
+    if (mode === 'g2048') g48Idle();
   }
 
   /* ---------- 번개 터치, 10초 딱 ---------- */
@@ -2888,7 +3093,7 @@ h2{font-size:17px;margin:0 0 12px}
       setMeText();
       return evaluateLeagueTitles().catch(function(){});
     }).then(function(){
-      if (panel === 'title'){ return loadTitles().then(loadClassTitles); }
+      if (panel === 'title'){ loadAch(); return loadTitles().then(loadClassTitles); }
     }).then(function(){
       if (panel === 'home') return loadBoard();
       if (panel === 'league') return loadLeague();
